@@ -1,0 +1,144 @@
+# AppGramSDK Group Configuration
+# Organizes the SDK types into logical groups for better documentation structure
+# This YAML file is used to generate proper JSON for documentation organization
+
+groups:
+  # Core SDK Types
+  Core:
+    description: "Core SDK types including configuration, errors, and user context"
+    patterns:
+      - "AppGramError"
+      - "Configuration"
+      - "UserContext"
+      - "ReleasesConfiguration"
+      - "StatusConfiguration"
+
+  # Feedback Models
+  Feedback:
+    description: "Feedback and wish management models"
+    patterns:
+      - "Wish"
+      - "WishStatus"
+      - "WishFilters"
+      - "WishSortOption"
+      - "Category"
+      - "Comment"
+      - "CreateCommentRequest"
+      - "Vote"
+      - "VoteRequest"
+
+  # Survey Models
+  Survey:
+    description: "Survey functionality and question types"
+    patterns:
+      - "Survey"
+      - "SurveyNode"
+      - "SurveyAnswer"
+      - "SurveyResponse"
+      - "SurveyAnswerPayload"
+      - "QuestionType"
+      - "NodeOption"
+      - "Branch"
+      - "BranchCondition"
+      - "ConditionType"
+      - "AnyCodableValue"
+
+  # Support Models
+  Support:
+    description: "Support ticket and message management"
+    patterns:
+      - "SupportTicket"
+      - "TicketStatus"
+      - "TicketPriority"
+      - "SupportMessage"
+      - "Attachment"
+      - "CreateTicketRequest"
+      - "CreateMessageRequest"
+      - "SupportRequestFilters"
+
+  # Help Center Models
+  Help:
+    description: "Help center articles and collections"
+    patterns:
+      - "HelpArticle"
+      - "HelpCollection"
+      - "PublicHelpCollection"
+      - "HelpFlow"
+      - "HelpDecisionNode"
+      - "HelpWizardStep"
+
+  # Contact Form Models
+  Form:
+    description: "Contact form handling and field types"
+    patterns:
+      - "ContactForm"
+      - "FormField"
+      - "FieldType"
+      - "FieldValidation"
+      - "ContactFormSubmission"
+      - "ContactFormsResponse"
+      - "ContactFormsAPIResponse"
+      - "StandaloneFormResponse"
+      - "Branding"
+
+  # Roadmap Models
+  Roadmap:
+    description: "Product roadmap items and layouts"
+    patterns:
+      - "RoadmapItem"
+      - "RoadmapColumn"
+      - "RoadmapLayout"
+
+  # Release Models
+  Releases:
+    description: "Release notes and version information"
+    patterns:
+      - "Release"
+      - "ReleaseFeature"
+      - "ReleaseLabel"
+
+  # Status Page Models
+  Status:
+    description: "Status page and service monitoring"
+    patterns:
+      - "StatusOverview"
+      - "StatusPage"
+      - "StatusUpdate"
+      - "StatusType"
+      - "StatusPageService"
+
+  # Theme
+  Theme:
+    description: "Theming and color customization"
+    patterns:
+      - "AppGramTheme"
+      - "ColorPalette"
+      - "ThemeEnvironmentKey"
+      - "ColorPresets"
+
+  # UI Components
+  UI:
+    description: "User interface components and views"
+    patterns:
+      - "*View"
+      - "*Card"
+      - "*Badge"
+      - "*Button"
+      - "SurveyStyle"
+      - "HTMLView"
+      - "MarkdownView"
+
+  # Utilities
+  Utilities:
+    description: "Utility classes and helpers"
+    patterns:
+      - "DeepLinkHandler"
+      - "NotificationManager"
+      - "InputSanitizer"
+      - "RateLimiter"
+      - "Logger"
+      - "Debouncer"
+      - "Cache"
+      - "DeviceFingerprint"
+
+# All unmatched types will automatically go to "Other" group

@@ -1,0 +1,59 @@
+import SwiftUI
+
+/// Status badge with shadcn-inspired minimal styling.
+///
+/// Features subtle background, ultra-thin border, and design system spacing.
+///
+/// ## Example
+/// ```swift
+/// StatusBadge(status: .inProgress)
+/// ```
+public struct StatusBadge: View {
+    @Environment(\.appGramTheme) private var theme
+    @Environment(\.colorScheme) private var colorScheme
+
+    let status: WishStatus
+
+    private var colors: ColorPalette {
+        theme.resolvedColors(for: colorScheme)
+    }
+
+    private var statusColor: Color {
+        switch status {
+        case .pending:
+            return Color(hex: "#9ca3af")
+        case .underReview:
+            return Color(hex: "#f59e0b")
+        case .planned:
+            return Color(hex: "#3b82f6")
+        case .inProgress:
+            return Color(hex: "#8b5cf6")
+        case .completed:
+            return colors.success
+        case .declined:
+            return colors.error
+        }
+    }
+
+    public init(status: WishStatus) {
+        self.status = status
+    }
+
+    public var body: some View {
+        HStack(spacing: DesignSystem.Spacing.xs) {
+            Image(systemName: status.systemImageName)
+                .font(.system(size: DesignSystem.Typography.xs - 2))
+            Text(status.displayName)
+                .font(.system(size: DesignSystem.Typography.xs, weight: DesignSystem.Typography.medium))
+        }
+        .foregroundColor(statusColor)
+        .padding(.horizontal, DesignSystem.Spacing.sm)
+        .padding(.vertical, DesignSystem.Spacing.xs)
+        .background(statusColor.opacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xs))
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xs)
+                .strokeBorder(statusColor.opacity(0.2), lineWidth: DesignSystem.BorderWidth.hairline)
+        )
+    }
+}
