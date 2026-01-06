@@ -35,49 +35,59 @@ public struct FeedbackCardView: View {
     }
 
     public var body: some View {
-        HStack(alignment: .top, spacing: DesignSystem.Spacing.md) {
-            VoteButton(
-                voteCount: wish.voteCount,
-                hasVoted: wish.hasVoted,
-                onVote: onVote,
-                onRemoveVote: onRemoveVote
-            )
+        VStack(alignment: .leading, spacing: DesignSystem.Spacing.md) {
+            HStack(alignment: .top, spacing: DesignSystem.Spacing.md) {
+                VoteButton(
+                    voteCount: wish.voteCount,
+                    hasVoted: wish.hasVoted,
+                    onVote: onVote,
+                    onRemoveVote: onRemoveVote
+                )
 
-            VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
-                Text(wish.title)
-                    .font(.system(size: DesignSystem.Typography.base, weight: DesignSystem.Typography.semibold))
-                    .foregroundColor(colors.cardText)
-                    .lineSpacing(2)
-                    .lineLimit(2)
-                    .accessibilityAddTraits(.isHeader)
-
-                if let description = wish.description, !description.isEmpty {
-                    Text(description)
-                        .font(.system(size: DesignSystem.Typography.sm))
-                        .foregroundColor(colors.cardText.opacity(DesignSystem.Opacity.muted))
+                VStack(alignment: .leading, spacing: DesignSystem.Spacing.xs) {
+                    Text(wish.title)
+                        .font(.system(size: DesignSystem.Typography.base, weight: DesignSystem.Typography.semibold))
+                        .foregroundColor(colors.cardText)
                         .lineSpacing(2)
-                        .lineLimit(3)
+                        .lineLimit(2)
+                        .accessibilityAddTraits(.isHeader)
+
+                    if let description = wish.description, !description.isEmpty {
+                        Text(description)
+                            .font(.system(size: DesignSystem.Typography.sm))
+                            .foregroundColor(colors.cardText.opacity(DesignSystem.Opacity.muted))
+                            .lineSpacing(2)
+                            .lineLimit(3)
+                    }
+                }
+            }
+
+            HStack(spacing: DesignSystem.Spacing.sm) {
+                StatusBadge(status: wish.status)
+
+                if let category = wish.category {
+                    CategoryBadge(category: category)
                 }
 
-                HStack(spacing: DesignSystem.Spacing.sm) {
-                    StatusBadge(status: wish.status)
+                Spacer()
 
-                    if let category = wish.category {
-                        CategoryBadge(category: category)
-                    }
-
-                    Spacer()
-
-                    HStack(spacing: DesignSystem.Spacing.xs) {
-                        Image(systemName: "bubble.left")
-                            .font(.system(size: DesignSystem.Typography.xs))
-                        Text("\(wish.commentCount)")
-                            .font(.system(size: DesignSystem.Typography.xs))
-                    }
-                    .foregroundColor(colors.cardText.opacity(DesignSystem.Opacity.disabled))
-                    .accessibilityElement(children: .ignore)
-                    .accessibilityLabel("\(wish.commentCount) comments")
+                HStack(spacing: DesignSystem.Spacing.xs) {
+                    Image(systemName: "bubble.left")
+                        .font(.system(size: DesignSystem.Typography.xs))
+                    Text("\(wish.commentCount)")
+                        .font(.system(size: DesignSystem.Typography.xs))
                 }
+                .padding(.horizontal, DesignSystem.Spacing.sm)
+                .padding(.vertical, DesignSystem.Spacing.xs)
+                .background(colors.background)
+                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.sm))
+                .overlay(
+                    RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.sm)
+                        .strokeBorder(colors.neutral200, lineWidth: DesignSystem.BorderWidth.thin)
+                )
+                .foregroundColor(colors.cardText.opacity(DesignSystem.Opacity.disabled))
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("\(wish.commentCount) comments")
             }
         }
         .padding(DesignSystem.Spacing.lg)
@@ -87,7 +97,7 @@ public struct FeedbackCardView: View {
             RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
                 .strokeBorder(colors.neutral200, lineWidth: DesignSystem.BorderWidth.thin)
         )
-        .layeredShadow()
+        .shadowStyle(DesignSystem.Shadow.xs)
         .cardHoverEffect()
     }
 }

@@ -44,7 +44,6 @@ public struct FeedbackListView: View {
                 .sheet(isPresented: $showingSubmitSheet) {
                     FeedbackSubmissionView(
                         feedbackService: viewModel,
-                        categories: viewModel.categories,
                         strings: strings
                     ) {
                         showingSubmitSheet = false
@@ -90,8 +89,15 @@ public struct FeedbackListView: View {
 
     private var feedbackList: some View {
         ScrollView {
-            LazyVStack(spacing: DesignSystem.Spacing.md) {
+            LazyVStack(spacing: DesignSystem.Spacing.lg) {
                 filterBar
+                    .padding(DesignSystem.Spacing.sm)
+                    .background(colors.cardBackground)
+                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
+                            .strokeBorder(colors.neutral200, lineWidth: DesignSystem.BorderWidth.thin)
+                    )
 
                 ForEach(viewModel.wishes) { wish in
                     FeedbackCardView(
@@ -146,7 +152,8 @@ public struct FeedbackListView: View {
                     FilterChip(
                         title: viewModel.selectedStatus?.displayName ?? strings.statusFilterLabel,
                         isActive: viewModel.selectedStatus != nil,
-                        minWidth: 100
+                        minWidth: 100,
+                        fixedWidth: 140
                     )
                 }
 
@@ -164,7 +171,8 @@ public struct FeedbackListView: View {
                         FilterChip(
                             title: viewModel.selectedCategory?.name ?? strings.categoryFilterLabel,
                             isActive: viewModel.selectedCategory != nil,
-                            minWidth: 120
+                            minWidth: 120,
+                            fixedWidth: 180
                         )
                     }
                 }
@@ -179,7 +187,8 @@ public struct FeedbackListView: View {
                     FilterChip(
                         title: "\(strings.sortPrefix): \(viewModel.sortBy.displayName)",
                         isActive: viewModel.sortBy != .newest,
-                        minWidth: 140
+                        minWidth: 140,
+                        fixedWidth: 200
                     )
                 }
             }
@@ -195,15 +204,20 @@ struct FilterChip: View {
     let title: String
     let isActive: Bool
     var minWidth: CGFloat = 80
+    var fixedWidth: CGFloat? = nil
 
     private var colors: ColorPalette {
         theme.resolvedColors(for: colorScheme)
     }
 
     var body: some View {
+        let width = fixedWidth ?? minWidth
+
         HStack(spacing: DesignSystem.Spacing.xs) {
             Text(title)
                 .font(.system(size: DesignSystem.Typography.sm, weight: DesignSystem.Typography.medium))
+                .lineLimit(1)
+                .truncationMode(.tail)
                 .fixedSize(horizontal: true, vertical: false)
             Image(systemName: "chevron.down")
                 .font(.system(size: DesignSystem.Typography.xs, weight: DesignSystem.Typography.medium))
@@ -211,14 +225,14 @@ struct FilterChip: View {
         .foregroundColor(isActive ? .white : colors.text)
         .padding(.horizontal, DesignSystem.Spacing.md)
         .padding(.vertical, DesignSystem.Spacing.sm)
-        .frame(minWidth: minWidth)
-        .background(isActive ? colors.primary : colors.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.pill))
+        .frame(minWidth: width, maxWidth: fixedWidth == nil ? nil : width)
+        .background(isActive ? colors.primary : colors.background)
+        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.sm))
         .overlay(
-            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.pill)
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.sm)
                 .strokeBorder(isActive ? colors.primary : colors.neutral200, lineWidth: DesignSystem.BorderWidth.thin)
         )
-        .layeredShadow()
+        .shadowStyle(DesignSystem.Shadow.xs)
         .accessibilityLabel(title)
         .accessibilityValue(isActive ? "Selected" : "Not selected")
         .accessibilityHint("Opens filter options.")

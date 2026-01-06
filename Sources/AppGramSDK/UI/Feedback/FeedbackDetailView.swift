@@ -116,13 +116,13 @@ public struct FeedbackDetailView: View {
             RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
                 .strokeBorder(colors.neutral200, lineWidth: DesignSystem.BorderWidth.thin)
         )
-        .layeredShadow()
+        .shadowStyle(DesignSystem.Shadow.xs)
     }
 
     @ViewBuilder
     private var descriptionSection: some View {
         if let description = viewModel.wish.description, !description.isEmpty {
-            VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
+            sectionCard {
                 Text(strings.descriptionLabel)
                     .font(.system(size: DesignSystem.Typography.base, weight: DesignSystem.Typography.semibold))
                     .foregroundColor(colors.text)
@@ -133,20 +133,11 @@ public struct FeedbackDetailView: View {
                     .lineSpacing(2)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .padding(DesignSystem.Spacing.lg)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(colors.cardBackground)
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg))
-            .overlay(
-                RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
-                    .strokeBorder(colors.neutral200, lineWidth: DesignSystem.BorderWidth.thin)
-            )
-            .layeredShadow()
         }
     }
 
     private var commentsSection: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.Spacing.md) {
+        sectionCard {
             HStack {
                 Text(strings.commentsLabel)
                     .font(.system(size: DesignSystem.Typography.base, weight: DesignSystem.Typography.semibold))
@@ -187,7 +178,7 @@ public struct FeedbackDetailView: View {
     }
 
     private var commentInputSection: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.Spacing.md) {
+        sectionCard {
             Text(strings.addCommentLabel)
                 .font(.system(size: DesignSystem.Typography.base, weight: DesignSystem.Typography.semibold))
                 .foregroundColor(colors.text)
@@ -199,7 +190,7 @@ public struct FeedbackDetailView: View {
                 .padding(DesignSystem.Spacing.sm)
                 .scrollContentBackground(.hidden)
                 .focused($isCommentFocused)
-                .background(colors.cardBackground)
+                .background(colors.background)
                 .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md))
                 .overlay(
                     RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md)
@@ -214,14 +205,6 @@ public struct FeedbackDetailView: View {
             .disabled(viewModel.newCommentText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             .accessibilityHint("Posts your comment.")
         }
-        .padding(DesignSystem.Spacing.lg)
-        .background(colors.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg))
-        .overlay(
-            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
-                .strokeBorder(colors.neutral200, lineWidth: DesignSystem.BorderWidth.thin)
-        )
-        .layeredShadow()
     }
 
     private var formattedDate: String {
@@ -229,5 +212,20 @@ public struct FeedbackDetailView: View {
         formatter.dateStyle = .medium
         formatter.timeStyle = .short
         return formatter.string(from: viewModel.wish.createdAt)
+    }
+
+    private func sectionCard<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: DesignSystem.Spacing.md) {
+            content()
+        }
+        .padding(DesignSystem.Spacing.lg)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(colors.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg))
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
+                .strokeBorder(colors.neutral200, lineWidth: DesignSystem.BorderWidth.thin)
+        )
+        .shadowStyle(DesignSystem.Shadow.xs)
     }
 }

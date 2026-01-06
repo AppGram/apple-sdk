@@ -57,8 +57,12 @@ public struct CommentView: View {
                 .foregroundColor(colors.text.opacity(DesignSystem.Opacity.subtle))
         }
         .padding(DesignSystem.Spacing.lg)
-        .background(comment.isOfficial ? colors.primary.opacity(0.05) : colors.cardBackground)
+        .background(comment.isOfficial ? colors.primary.opacity(0.08) : colors.background)
         .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg))
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
+                .strokeBorder(colors.neutral200, lineWidth: DesignSystem.BorderWidth.thin)
+        )
         .shadowStyle(DesignSystem.Shadow.xs)
         .accessibilityElement(children: .combine)
     }

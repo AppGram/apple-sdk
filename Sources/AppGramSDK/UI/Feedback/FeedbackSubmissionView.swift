@@ -7,7 +7,6 @@ public struct FeedbackSubmissionView: View {
 
     @State private var title = ""
     @State private var description = ""
-    @State private var selectedCategory: Category?
     @State private var isSubmitting = false
     @State private var isSubmitted = false
     @State private var error: AppGramError?
@@ -18,7 +17,6 @@ public struct FeedbackSubmissionView: View {
     }
 
     private let feedbackService: FeedbackViewModel
-    private let categories: [Category]
     private let strings: FeedbackStrings
     private let onDismiss: () -> Void
 
@@ -28,12 +26,10 @@ public struct FeedbackSubmissionView: View {
 
     internal init(
         feedbackService: FeedbackViewModel,
-        categories: [Category],
         strings: FeedbackStrings = .default,
         onDismiss: @escaping () -> Void
     ) {
         self.feedbackService = feedbackService
-        self.categories = categories
         self.strings = strings
         self.onDismiss = onDismiss
     }
@@ -45,7 +41,6 @@ public struct FeedbackSubmissionView: View {
                     VStack(alignment: .leading, spacing: DesignSystem.Spacing.lg) {
                         titleSection
                         descriptionSection
-                        categorySection
                         submitButton
 
                         Color.clear
@@ -107,7 +102,7 @@ public struct FeedbackSubmissionView: View {
     }
 
     private var titleSection: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
+        sectionCard {
             Text(strings.titleLabel)
                 .font(.system(size: DesignSystem.Typography.base, weight: DesignSystem.Typography.semibold))
                 .foregroundColor(colors.text)
@@ -126,7 +121,7 @@ public struct FeedbackSubmissionView: View {
                     focusedField = .description
                 }
                 .padding(DesignSystem.Spacing.md)
-                .background(colors.cardBackground)
+                .background(colors.background)
                 .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md))
                 .overlay(
                     RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md)
@@ -138,7 +133,7 @@ public struct FeedbackSubmissionView: View {
     }
 
     private var descriptionSection: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
+        sectionCard {
             Text(strings.descriptionLabel)
                 .font(.system(size: DesignSystem.Typography.base, weight: DesignSystem.Typography.semibold))
                 .foregroundColor(colors.text)
@@ -154,7 +149,7 @@ public struct FeedbackSubmissionView: View {
                 .padding(DesignSystem.Spacing.sm)
                 .scrollContentBackground(.hidden)
                 .focused($focusedField, equals: .description)
-                .background(colors.cardBackground)
+                .background(colors.background)
                 .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md))
                 .overlay(
                     RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md)
@@ -163,56 +158,6 @@ public struct FeedbackSubmissionView: View {
                 .accessibilityLabel(strings.descriptionLabel)
                 .accessibilityHint(strings.descriptionHint)
         }
-    }
-
-    @ViewBuilder
-    private var categorySection: some View {
-        if !categories.isEmpty {
-            VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
-                Text("Category")
-                    .font(.system(size: DesignSystem.Typography.base, weight: DesignSystem.Typography.semibold))
-                    .foregroundColor(colors.text)
-
-                Text("Select a category for your feedback (optional)")
-                    .font(.system(size: DesignSystem.Typography.xs))
-                    .foregroundColor(colors.text.opacity(DesignSystem.Opacity.muted))
-
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: DesignSystem.Spacing.sm) {
-                        categoryChip(nil, title: "None")
-                        ForEach(categories) { category in
-                            categoryChip(category, title: category.name)
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private func categoryChip(_ category: Category?, title: String) -> some View {
-        let isSelected = selectedCategory?.id == category?.id
-
-        return Button {
-            selectedCategory = category
-        } label: {
-            Text(title)
-                .font(.system(size: DesignSystem.Typography.sm, weight: DesignSystem.Typography.medium))
-                .foregroundColor(isSelected ? .white : colors.text)
-                .padding(.horizontal, DesignSystem.Spacing.lg)
-                .padding(.vertical, DesignSystem.Spacing.sm + 2)
-                .background(isSelected ? colors.primary : colors.cardBackground)
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl))
-                .overlay(
-                    RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl)
-                        .strokeBorder(isSelected ? colors.primary : colors.neutral200, lineWidth: DesignSystem.BorderWidth.thin)
-                )
-                .shadowStyle(DesignSystem.Shadow.xs)
-                .animation(DesignSystem.Animation.spring, value: isSelected)
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel("Category: \(title)")
-        .accessibilityValue(isSelected ? "Selected" : "Not selected")
-        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
     private var submitButton: some View {
@@ -224,12 +169,26 @@ public struct FeedbackSubmissionView: View {
         .accessibilityHint("Submits your feedback.")
     }
 
+    private func sectionCard<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
+            content()
+        }
+        .padding(DesignSystem.Spacing.lg)
+        .background(colors.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg))
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
+                .strokeBorder(colors.neutral200, lineWidth: DesignSystem.BorderWidth.thin)
+        )
+        .shadowStyle(DesignSystem.Shadow.xs)
+    }
+
     private func submit() async {
         isSubmitting = true
         let success = await feedbackService.submitFeedback(
             title: title.trimmingCharacters(in: .whitespacesAndNewlines),
             description: description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : description,
-            categoryId: selectedCategory?.id
+            categoryId: nil
         )
         isSubmitting = false
 

@@ -27,6 +27,14 @@ struct FeedbackPromptView: View {
                 showingFeedback = true
             }
         }
+        .padding(DesignSystem.Spacing.lg)
+        .background(colors.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg))
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
+                .strokeBorder(colors.neutral200, lineWidth: DesignSystem.BorderWidth.thin)
+        )
+        .shadowStyle(DesignSystem.Shadow.xs)
         .sheet(isPresented: $showingFeedback) {
             if let feedbackView = try? AppGramSDK.shared.feedbackView() {
                 AnyView(feedbackView)
