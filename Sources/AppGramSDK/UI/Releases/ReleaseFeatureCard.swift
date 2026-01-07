@@ -12,14 +12,14 @@ struct ReleaseFeatureCard: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(alignment: .leading, spacing: DesignSystem.Spacing.md) {
             if let imageUrl = feature.imageUrl, let url = URL(string: imageUrl) {
                 AsyncImage(url: url) { phase in
                     switch phase {
                     case .empty:
                         Rectangle()
                             .fill(colors.border.opacity(DesignSystem.Opacity.muted))
-                            .frame(height: 180)
+                            .frame(height: 160)
                             .overlay(
                                 ProgressView()
                                     .tint(colors.primary)
@@ -28,12 +28,12 @@ struct ReleaseFeatureCard: View {
                         image
                             .resizable()
                             .aspectRatio(contentMode: .fill)
-                            .frame(height: 180)
+                            .frame(height: 160)
                             .clipped()
                     case .failure:
                         Rectangle()
                             .fill(colors.border.opacity(DesignSystem.Opacity.muted))
-                            .frame(height: 180)
+                            .frame(height: 160)
                             .overlay(
                                 VStack(spacing: DesignSystem.Spacing.sm) {
                                     Image(systemName: "photo.on.rectangle.angled")
@@ -51,33 +51,33 @@ struct ReleaseFeatureCard: View {
                 .clipShape(RoundedRectangle(cornerRadius: configuration.imageCornerRadius))
             }
 
-            VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
-                HStack(alignment: .top, spacing: DesignSystem.Spacing.sm) {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: DesignSystem.Typography.base))
-                        .foregroundColor(colors.accent)
+            HStack(alignment: .top, spacing: DesignSystem.Spacing.sm) {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: DesignSystem.Typography.base))
+                    .foregroundColor(colors.accent)
 
+                VStack(alignment: .leading, spacing: DesignSystem.Spacing.xs) {
                     Text(feature.title)
                         .font(.system(size: DesignSystem.Typography.base, weight: DesignSystem.Typography.semibold))
                         .foregroundColor(colors.text)
                         .fixedSize(horizontal: false, vertical: true)
-                }
 
-                if let description = feature.description {
-                    Text(description)
-                        .font(.system(size: DesignSystem.Typography.sm))
-                        .foregroundColor(colors.cardText)
-                        .lineLimit(4)
-                        .multilineTextAlignment(.leading)
+                    if let description = feature.description {
+                        Text(description)
+                            .font(.system(size: DesignSystem.Typography.sm))
+                            .foregroundColor(colors.neutral500)
+                            .lineLimit(4)
+                            .multilineTextAlignment(.leading)
+                    }
                 }
             }
-            .padding(DesignSystem.Spacing.md + 2)
         }
+        .padding(DesignSystem.Spacing.lg)
         .background(colors.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: configuration.cardCornerRadius))
         .overlay(
             RoundedRectangle(cornerRadius: configuration.cardCornerRadius)
-                .strokeBorder(colors.neutral200, lineWidth: DesignSystem.BorderWidth.thin)
+                .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
         )
         .layeredShadow()
     }

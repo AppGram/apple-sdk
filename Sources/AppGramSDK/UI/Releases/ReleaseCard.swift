@@ -12,16 +12,20 @@ struct ReleaseCard: View {
         theme.resolvedColors(for: colorScheme)
     }
 
+    private var accent: Color {
+        release.labels.first?.color ?? colors.primary
+    }
+
     var body: some View {
         Button(action: onTap) {
-            VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .leading, spacing: DesignSystem.Spacing.md) {
                 if let coverImageUrl = release.coverImageUrl, let url = URL(string: coverImageUrl) {
                     AsyncImage(url: url) { phase in
                         switch phase {
                         case .empty:
                             Rectangle()
                                 .fill(colors.border.opacity(0.3))
-                                .frame(height: 200)
+                                .frame(height: 180)
                                 .overlay(
                                     ProgressView()
                                         .tint(colors.primary)
@@ -30,12 +34,12 @@ struct ReleaseCard: View {
                             image
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)
-                                .frame(height: 200)
+                                .frame(height: 180)
                                 .clipped()
                         case .failure:
                             Rectangle()
                                 .fill(colors.border.opacity(0.3))
-                                .frame(height: 200)
+                                .frame(height: 180)
                                 .overlay(
                                     VStack(spacing: 8) {
                                         Image(systemName: "photo.on.rectangle.angled")
@@ -53,71 +57,70 @@ struct ReleaseCard: View {
                     .clipShape(RoundedRectangle(cornerRadius: configuration.imageCornerRadius))
                 }
 
-                VStack(alignment: .leading, spacing: DesignSystem.Spacing.md) {
-                    HStack(alignment: .top, spacing: DesignSystem.Spacing.md) {
+                HStack(alignment: .top, spacing: DesignSystem.Spacing.md) {
+                    VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
                         Text(release.title)
                             .font(.system(size: DesignSystem.Typography.lg, weight: DesignSystem.Typography.semibold))
                             .foregroundColor(colors.text)
                             .lineLimit(2)
                             .fixedSize(horizontal: false, vertical: true)
 
-                        Spacer(minLength: DesignSystem.Spacing.sm)
-
-                        if configuration.showVersionBadge, let version = release.version {
-                            Text(version)
-                                .font(.system(size: DesignSystem.Typography.xs - 1, weight: DesignSystem.Typography.semibold))
-                                .foregroundColor(.white)
-                                .padding(.horizontal, DesignSystem.Spacing.sm + 2)
-                                .padding(.vertical, DesignSystem.Spacing.xs + 1)
-                                .background(
-                                    LinearGradient(
-                                        colors: [colors.primary, colors.primary.opacity(0.8)],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                )
-                                .clipShape(Capsule())
-                                .shadow(color: colors.primary.opacity(0.3), radius: DesignSystem.Shadow.xs.radius, y: DesignSystem.Shadow.xs.y)
+                        if let excerpt = release.excerpt {
+                            Text(excerpt)
+                                .font(.system(size: DesignSystem.Typography.sm))
+                                .foregroundColor(colors.neutral500)
+                                .lineLimit(3)
                         }
                     }
 
-                    if !release.labels.isEmpty {
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: DesignSystem.Spacing.sm) {
-                                ForEach(release.labels, id: \.self) { label in
-                                    ReleaseLabelBadge(label: label)
-                                }
+                    Spacer(minLength: DesignSystem.Spacing.sm)
+
+                    if configuration.showVersionBadge, let version = release.version {
+                        Text(version)
+                            .font(.system(size: DesignSystem.Typography.xs - 1, weight: DesignSystem.Typography.semibold))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, DesignSystem.Spacing.sm + 2)
+                            .padding(.vertical, DesignSystem.Spacing.xs + 1)
+                            .background(accent)
+                            .clipShape(Capsule())
+                    }
+                }
+
+                if !release.labels.isEmpty {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: DesignSystem.Spacing.sm) {
+                            ForEach(release.labels, id: \.self) { label in
+                                ReleaseLabelBadge(label: label)
                             }
                         }
                     }
-
-                    if let excerpt = release.excerpt {
-                        Text(excerpt)
-                            .font(.system(size: DesignSystem.Typography.sm))
-                            .foregroundColor(colors.cardText)
-                            .lineLimit(3)
-                            .multilineTextAlignment(.leading)
-                    }
-
-                    if let publishedAt = release.publishedAt {
-                        HStack(spacing: DesignSystem.Spacing.xs + 2) {
-                            Image(systemName: "calendar")
-                                .font(.system(size: DesignSystem.Typography.xs - 1))
-                            Text(publishedAt, style: .date)
-                                .font(.system(size: DesignSystem.Typography.xs))
-                        }
-                        .foregroundColor(colors.secondary)
-                        .padding(.top, DesignSystem.Spacing.xs)
-                    }
                 }
-                .padding(DesignSystem.Spacing.lg)
+
+                if let publishedAt = release.publishedAt {
+                    HStack(spacing: DesignSystem.Spacing.xs + 2) {
+                        Image(systemName: "calendar")
+                            .font(.system(size: DesignSystem.Typography.xs - 1))
+                        Text(publishedAt, style: .date)
+                            .font(.system(size: DesignSystem.Typography.xs))
+                    }
+                    .foregroundColor(colors.neutral500)
+                    .padding(.top, DesignSystem.Spacing.xs)
+                }
             }
+            .padding(DesignSystem.Spacing.lg)
             .background(colors.cardBackground)
             .clipShape(RoundedRectangle(cornerRadius: configuration.cardCornerRadius))
             .overlay(
                 RoundedRectangle(cornerRadius: configuration.cardCornerRadius)
-                    .strokeBorder(colors.neutral200, lineWidth: DesignSystem.BorderWidth.thin)
+                    .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
             )
+            .overlay(alignment: .leading) {
+                RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.sm)
+                    .fill(accent)
+                    .frame(width: 3)
+                    .padding(.vertical, DesignSystem.Spacing.lg)
+                    .offset(x: 2)
+            }
             .layeredShadow()
         }
         .buttonStyle(.plain)

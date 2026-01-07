@@ -32,61 +32,51 @@ struct StatusUpdateCard: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Clickable Header
-            Button(action: {
-                withAnimation(DesignSystem.Animation.springSmooth) {
-                    isExpanded.toggle()
-                }
-            }) {
-                VStack(alignment: .leading, spacing: DesignSystem.Spacing.md) {
-                    // Top Row: Badge and Time
-                    HStack(alignment: .center, spacing: DesignSystem.Spacing.md) {
-                        StatusTypeBadge(statusType: update.statusType)
+        HStack(alignment: .top, spacing: DesignSystem.Spacing.md) {
+            timelineMarker
 
-                        if !timeAgo.isEmpty {
-                            HStack(spacing: DesignSystem.Spacing.xs) {
-                                Image(systemName: "clock")
-                                    .font(.system(size: DesignSystem.Typography.xs))
-                                Text(timeAgo)
-                                    .font(.system(size: DesignSystem.Typography.sm))
+            VStack(alignment: .leading, spacing: DesignSystem.Spacing.md) {
+                Button(action: {
+                    withAnimation(DesignSystem.Animation.springSmooth) {
+                        isExpanded.toggle()
+                    }
+                }) {
+                    VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
+                        HStack(spacing: DesignSystem.Spacing.sm) {
+                            StatusTypeBadge(statusType: update.statusType)
+
+                            if !timeAgo.isEmpty {
+                                HStack(spacing: DesignSystem.Spacing.xs) {
+                                    Image(systemName: "clock")
+                                        .font(.system(size: DesignSystem.Typography.xs))
+                                    Text(timeAgo)
+                                        .font(.system(size: DesignSystem.Typography.xs))
+                                }
+                                .foregroundColor(colors.neutral500)
                             }
-                            .foregroundColor(colors.text.opacity(DesignSystem.Opacity.muted))
+
+                            Spacer()
+
+                            Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                                .font(.system(size: DesignSystem.Typography.xs, weight: .semibold))
+                                .foregroundColor(colors.text.opacity(DesignSystem.Opacity.muted))
                         }
 
-                        Spacer()
-
-                        // Expand/Collapse Icon
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: DesignSystem.Typography.sm, weight: .semibold))
-                            .foregroundColor(colors.text.opacity(DesignSystem.Opacity.muted))
-                            .rotationEffect(.degrees(isExpanded ? 90 : 0))
+                        Text(update.title)
+                            .font(.system(size: DesignSystem.Typography.base, weight: .semibold))
+                            .foregroundColor(colors.text)
+                            .lineLimit(isExpanded ? nil : 2)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
-
-                    // Title (Full Width)
-                    Text(update.title)
-                        .font(.system(size: DesignSystem.Typography.base, weight: .semibold))
-                        .foregroundColor(colors.text)
-                        .lineLimit(isExpanded ? nil : 2)
-                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .padding(DesignSystem.Spacing.lg)
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(PlainButtonStyle())
+                .buttonStyle(PlainButtonStyle())
 
-            // Expandable Content
-            if isExpanded {
-                VStack(alignment: .leading, spacing: DesignSystem.Spacing.lg) {
-                    Divider()
-                        .padding(.horizontal, DesignSystem.Spacing.lg)
-
+                if isExpanded {
                     VStack(alignment: .leading, spacing: DesignSystem.Spacing.md + 2) {
-                        // Description with Markdown
                         if let description = update.description, !description.isEmpty {
                             Markdown(description)
                                 .markdownTextStyle(\.text) {
-                                    ForegroundColor(colors.text.opacity(DesignSystem.Opacity.subtle))
+                                    ForegroundColor(colors.neutral500)
                                     FontSize(DesignSystem.Typography.sm)
                                 }
                                 .markdownTextStyle(\.code) {
@@ -95,7 +85,6 @@ struct StatusUpdateCard: View {
                                 }
                         }
 
-                        // Affected Services
                         if !update.affectedServices.isEmpty {
                             VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
                                 HStack(spacing: DesignSystem.Spacing.xs) {
@@ -105,7 +94,7 @@ struct StatusUpdateCard: View {
 
                                     Text("Affected Services")
                                         .font(.system(size: DesignSystem.Typography.sm, weight: .semibold))
-                                        .foregroundColor(colors.text.opacity(DesignSystem.Opacity.muted))
+                                        .foregroundColor(colors.neutral500)
                                 }
 
                                 FlowLayout(spacing: DesignSystem.Spacing.xs) {
@@ -122,7 +111,6 @@ struct StatusUpdateCard: View {
                             }
                         }
 
-                        // Resolved Indicator
                         if update.state == .resolved, let resolvedAt = update.resolvedAt {
                             HStack(spacing: DesignSystem.Spacing.sm) {
                                 Image(systemName: "checkmark.circle.fill")
@@ -134,29 +122,43 @@ struct StatusUpdateCard: View {
                                     .foregroundColor(colors.success)
 
                                 Text("•")
-                                    .foregroundColor(colors.text.opacity(DesignSystem.Opacity.muted))
+                                    .foregroundColor(colors.neutral500)
 
                                 Text(resolvedAt, style: .relative)
                                     .font(.system(size: DesignSystem.Typography.sm))
-                                    .foregroundColor(colors.text.opacity(DesignSystem.Opacity.muted))
+                                    .foregroundColor(colors.neutral500)
                             }
                         }
                     }
-                    .padding(.horizontal, DesignSystem.Spacing.lg)
-                    .padding(.bottom, DesignSystem.Spacing.lg)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
                 }
-                .transition(.opacity.combined(with: .move(edge: .top)))
             }
+            .padding(DesignSystem.Spacing.lg)
+            .background(
+                RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg, style: .continuous)
+                    .fill(colors.cardBackground)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg, style: .continuous)
+                    .strokeBorder(isExpanded ? update.statusType.color.opacity(0.2) : colors.border, lineWidth: DesignSystem.BorderWidth.thin)
+            )
+            .layeredShadow()
         }
-        .background(
-            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg, style: .continuous)
-                .fill(colors.cardBackground)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg, style: .continuous)
-                .strokeBorder(isExpanded ? update.statusType.color.opacity(0.2) : Color.clear, lineWidth: DesignSystem.BorderWidth.thin + 0.5)
-        )
-        .layeredShadow()
+    }
+
+    private var timelineMarker: some View {
+        VStack(spacing: 0) {
+            Circle()
+                .fill(update.statusType.color)
+                .frame(width: 10, height: 10)
+
+            Rectangle()
+                .fill(colors.border)
+                .frame(width: 2)
+                .frame(maxHeight: .infinity)
+                .opacity(0.6)
+        }
+        .padding(.top, DesignSystem.Spacing.lg)
     }
 }
 

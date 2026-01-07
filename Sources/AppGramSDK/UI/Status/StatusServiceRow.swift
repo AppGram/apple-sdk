@@ -16,60 +16,53 @@ struct StatusServiceRow: View {
     }
 
     var body: some View {
-        HStack(spacing: DesignSystem.Spacing.md + 2) {
-            // Service Info
-            VStack(alignment: .leading, spacing: DesignSystem.Spacing.xs) {
-                HStack(spacing: DesignSystem.Spacing.sm) {
-                    Text(service.name)
-                        .font(.system(size: DesignSystem.Typography.sm, weight: .medium))
-                        .foregroundColor(colors.text)
+        VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
+            HStack(spacing: DesignSystem.Spacing.sm) {
+                Circle()
+                    .fill((effectiveStatus ?? .operational).color)
+                    .frame(width: 10, height: 10)
 
-                    if let groupName = service.groupName {
-                        Text("•")
-                            .foregroundColor(colors.text.opacity(DesignSystem.Opacity.muted))
-                            .font(.system(size: DesignSystem.Typography.xs))
-                        Text(groupName)
-                            .font(.system(size: DesignSystem.Typography.sm))
-                            .foregroundColor(colors.text.opacity(DesignSystem.Opacity.muted))
-                    }
-                }
+                Text(service.name)
+                    .font(.system(size: DesignSystem.Typography.sm, weight: .semibold))
+                    .foregroundColor(colors.text)
+                    .lineLimit(1)
 
-                if let description = service.description, !description.isEmpty {
-                    Text(description)
-                        .font(.system(size: DesignSystem.Typography.sm))
-                        .foregroundColor(colors.text.opacity(DesignSystem.Opacity.muted))
-                        .lineLimit(1)
-                }
+                Spacer(minLength: 0)
             }
 
-            Spacer()
+            if let groupName = service.groupName {
+                Text(groupName)
+                    .font(.system(size: DesignSystem.Typography.xs, weight: .medium))
+                    .foregroundColor(colors.neutral500)
+            }
 
-            // Status Indicator & Badge
-            HStack(spacing: DesignSystem.Spacing.xs + 2) {
+            if let description = service.description, !description.isEmpty {
+                Text(description)
+                    .font(.system(size: DesignSystem.Typography.xs))
+                    .foregroundColor(colors.neutral500)
+                    .lineLimit(2)
+            }
+
+            Spacer(minLength: 0)
+
+            HStack {
                 if let status = effectiveStatus {
-                    Text(status.displayName)
-                        .font(.system(size: DesignSystem.Typography.sm, weight: .medium))
-                        .foregroundColor(status.color)
-
-                    Circle()
-                        .fill(status.color)
-                        .frame(width: 8, height: 8)
+                    StatusTypeBadge(statusType: status)
                 } else {
                     Text("Unknown")
-                        .font(.system(size: DesignSystem.Typography.sm, weight: .medium))
-                        .foregroundColor(colors.text.opacity(DesignSystem.Opacity.muted))
-
-                    Circle()
-                        .fill(colors.border)
-                        .frame(width: 8, height: 8)
+                        .font(.system(size: DesignSystem.Typography.xs, weight: .medium))
+                        .foregroundColor(colors.neutral500)
                 }
+
+                Spacer(minLength: 0)
             }
         }
-        .padding(.vertical, DesignSystem.Spacing.md + 2)
-        .padding(.horizontal, DesignSystem.Spacing.lg)
-        .background(
-            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md, style: .continuous)
-                .fill(colors.cardBackground)
+        .frame(maxWidth: .infinity, minHeight: 130, alignment: .leading)
+        .padding(DesignSystem.Spacing.lg)
+        .background(colors.cardBackground, in: RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg, style: .continuous)
+                .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
         )
         .layeredShadow()
     }

@@ -69,26 +69,26 @@ public struct AnnouncementCardConfiguration {
     /// Creates an announcement card configuration.
     ///
     /// - Parameters:
-    ///   - backgroundColor: Background color for the card. Defaults to dark grey.
+    ///   - backgroundColor: Background color for the card. Defaults to nil to follow the theme.
     ///   - primaryButton: Primary button configuration. Defaults to "Try it" button.
     ///   - secondaryButton: Secondary button configuration. Defaults to "Not now" button.
-    ///   - titleColor: Title text color. Defaults to white.
-    ///   - descriptionColor: Description text color. Defaults to white.
-    ///   - titleFontSize: Title font size. Defaults to 32.
+    ///   - titleColor: Title text color. Defaults to nil to follow the theme.
+    ///   - descriptionColor: Description text color. Defaults to nil to follow the theme.
+    ///   - titleFontSize: Title font size. Defaults to 30.
     ///   - descriptionFontSize: Description font size. Defaults to 16.
-    ///   - cornerRadius: Corner radius for the card. Defaults to 0 (no rounding).
-    ///   - modalPadding: Padding around the card within the modal. Defaults to 16.
+    ///   - cornerRadius: Corner radius for the card. Defaults to 24.
+    ///   - modalPadding: Padding around the card within the modal. Defaults to 20.
     ///   - pageIndicatorConfiguration: Configuration for page indicators. Defaults to `.default`.
     public init(
-        backgroundColor: Color? = Color(white: 0.2),
-        primaryButton: ButtonConfiguration? = ButtonConfiguration.primary(title: "Try it"),
-        secondaryButton: ButtonConfiguration? = ButtonConfiguration.secondary(title: "Not now"),
-        titleColor: Color? = .white,
-        descriptionColor: Color? = .white,
-        titleFontSize: CGFloat = 32,
+        backgroundColor: Color? = nil,
+        primaryButton: ButtonConfiguration? = ButtonConfiguration(title: "Try it"),
+        secondaryButton: ButtonConfiguration? = ButtonConfiguration(title: "Not now", style: .secondary, height: nil),
+        titleColor: Color? = nil,
+        descriptionColor: Color? = nil,
+        titleFontSize: CGFloat = 30,
         descriptionFontSize: CGFloat = 16,
-        cornerRadius: CGFloat = 0,
-        modalPadding: CGFloat = 16,
+        cornerRadius: CGFloat = 24,
+        modalPadding: CGFloat = 20,
         pageIndicatorConfiguration: PageIndicatorConfiguration = .default
     ) {
         self.backgroundColor = backgroundColor
@@ -112,4 +112,3 @@ public struct AnnouncementCardConfiguration {
         secondaryButton: nil
     )
 }
-

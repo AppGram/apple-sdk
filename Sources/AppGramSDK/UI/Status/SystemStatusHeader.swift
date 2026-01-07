@@ -29,36 +29,33 @@ struct SystemStatusHeader: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(alignment: .leading, spacing: DesignSystem.Spacing.md) {
+            Text(configuration.title)
+                .font(.system(size: DesignSystem.Typography.xl, weight: .semibold, design: .serif))
+                .foregroundColor(colors.text)
+
             HStack(spacing: DesignSystem.Spacing.lg) {
-                // Status Indicator
                 Circle()
                     .fill(status.color)
                     .frame(width: 12, height: 12)
                     .shadowStyle(DesignSystem.Shadow.sm)
 
-                // Status Text
                 VStack(alignment: .leading, spacing: DesignSystem.Spacing.xs) {
                     Text(statusMessage)
                         .font(.system(size: DesignSystem.Typography.lg, weight: .semibold))
                         .foregroundColor(colors.text)
 
-                    HStack(spacing: DesignSystem.Spacing.xs + 2) {
-                        StatusTypeBadge(statusType: status)
-                    }
+                    StatusTypeBadge(statusType: status)
                 }
 
                 Spacer()
             }
-            .padding(DesignSystem.Spacing.xl)
         }
-        .background(
-            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg, style: .continuous)
-                .fill(status.color.opacity(0.08))
-        )
+        .padding(DesignSystem.Spacing.xl)
+        .background(colors.cardBackground.opacity(0.95), in: RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl))
         .overlay(
-            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg, style: .continuous)
-                .strokeBorder(status.color.opacity(0.2), lineWidth: DesignSystem.BorderWidth.thin)
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl)
+                .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
         )
     }
 }

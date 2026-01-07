@@ -18,26 +18,20 @@ struct ReleaseLabelBadge: View {
 
     var body: some View {
         HStack(spacing: DesignSystem.Spacing.xs) {
-            Image(systemName: label.iconName)
-                .font(.system(size: DesignSystem.Typography.xs - 2, weight: DesignSystem.Typography.bold))
+            Circle()
+                .fill(label.color)
+                .frame(width: 6, height: 6)
             Text(label.displayName)
                 .font(.system(size: DesignSystem.Typography.xs, weight: DesignSystem.Typography.semibold))
         }
-        .foregroundColor(.white)
+        .foregroundColor(label.color)
         .padding(.horizontal, DesignSystem.Spacing.sm + 2)
         .padding(.vertical, DesignSystem.Spacing.xs + 2)
-        .background(
-            LinearGradient(
-                colors: [label.color, label.color.opacity(0.85)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        )
+        .background(label.color.opacity(0.12))
         .clipShape(Capsule())
         .overlay(
             Capsule()
-                .strokeBorder(.white.opacity(0.2), lineWidth: DesignSystem.BorderWidth.hairline)
+                .strokeBorder(label.color.opacity(0.3), lineWidth: DesignSystem.BorderWidth.hairline)
         )
-        .shadow(color: label.color.opacity(0.4), radius: DesignSystem.Shadow.xs.radius, y: DesignSystem.Shadow.xs.y)
     }
 }

@@ -21,7 +21,11 @@ struct AnnouncementCardView: View {
     private var colors: ColorPalette {
         theme.resolvedColors(for: colorScheme)
     }
-    
+
+    private var accent: Color {
+        configuration.titleColor ?? colors.primary
+    }
+
     init(
         announcement: Announcement,
         configuration: AnnouncementCardConfiguration = .default,
@@ -35,92 +39,153 @@ struct AnnouncementCardView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            // Media preview (image or video) at the top
-            if let imageUrl = announcement.imageUrl {
-                AnnouncementMediaView(imageUrl: imageUrl)
-                    .padding(.horizontal, DesignSystem.Spacing.xl)
-                    .padding(.top, DesignSystem.Spacing.xl)
-            }
+        VStack(alignment: .leading, spacing: DesignSystem.Spacing.lg) {
+            headerMedia
 
-            // Content area
-            VStack(alignment: .leading, spacing: DesignSystem.Spacing.xl) {
-                // Title
+            VStack(alignment: .leading, spacing: DesignSystem.Spacing.md) {
+                metaRow
+
                 Text(announcement.title)
-                    .font(.system(size: configuration.titleFontSize, weight: DesignSystem.Typography.bold))
-                    .foregroundColor(configuration.titleColor ?? .white)
-                    .padding(.top, DesignSystem.Spacing.xxl)
-                    .padding(.horizontal, DesignSystem.Spacing.xl)
+                    .font(.system(size: configuration.titleFontSize, weight: DesignSystem.Typography.bold, design: .rounded))
+                    .foregroundColor(configuration.titleColor ?? colors.text)
+                    .fixedSize(horizontal: false, vertical: true)
 
-                // Description paragraphs
+                if let subtitle = announcement.subtitle {
+                    Text(subtitle)
+                        .font(.system(size: configuration.descriptionFontSize))
+                        .foregroundColor(configuration.descriptionColor ?? colors.neutral500)
+                        .lineSpacing(DesignSystem.Spacing.xs)
+                }
+            }
+            .padding(.horizontal, DesignSystem.Spacing.xl)
+
+            if !announcement.features.isEmpty {
                 VStack(alignment: .leading, spacing: DesignSystem.Spacing.md) {
-                    if let subtitle = announcement.subtitle {
-                        Text(subtitle)
-                            .font(.system(size: configuration.descriptionFontSize))
-                            .foregroundColor(configuration.descriptionColor ?? .white)
-                            .lineSpacing(DesignSystem.Spacing.xs)
-                    }
+                    Text("Highlights")
+                        .font(.system(size: DesignSystem.Typography.sm, weight: DesignSystem.Typography.semibold))
+                        .foregroundColor(colors.text)
 
-                    // Additional description from features
-                    if !announcement.features.isEmpty {
-                        let featureDescriptions = announcement.features.compactMap { $0.description }.joined(separator: " ")
-                        if !featureDescriptions.isEmpty {
-                            Text(featureDescriptions)
-                                .font(.system(size: configuration.descriptionFontSize))
-                                .foregroundColor(configuration.descriptionColor ?? .white)
-                                .lineSpacing(DesignSystem.Spacing.xs)
+                    VStack(spacing: DesignSystem.Spacing.md) {
+                        ForEach(announcement.features) { feature in
+                            AnnouncementFeatureRow(feature: feature)
                         }
                     }
                 }
                 .padding(.horizontal, DesignSystem.Spacing.xl)
+            }
 
-                // Privacy notice
-                if let privacyNote = announcement.privacyNote {
-                    HStack(spacing: DesignSystem.Spacing.xs) {
-                        Text(privacyNote)
-                            .font(.system(size: DesignSystem.Typography.sm, weight: DesignSystem.Typography.regular))
-                            .foregroundColor(.white.opacity(DesignSystem.Opacity.subtle))
+            if let privacyNote = announcement.privacyNote {
+                HStack(spacing: DesignSystem.Spacing.sm) {
+                    Image(systemName: "lock.shield")
+                        .font(.system(size: DesignSystem.Typography.xs, weight: DesignSystem.Typography.semibold))
+                        .foregroundColor(colors.neutral500)
 
-                        if let learnMoreUrl = announcement.learnMoreUrl {
-                            Button(action: {
-                                if let url = URL(string: learnMoreUrl) {
-                                    #if canImport(UIKit)
-                                    UIApplication.shared.open(url)
-                                    #endif
-                                }
-                            }) {
-                                Text("Learn more")
-                                    .font(.system(size: DesignSystem.Typography.sm, weight: DesignSystem.Typography.medium))
-                                    .foregroundColor(.white)
+                    Text(privacyNote)
+                        .font(.system(size: DesignSystem.Typography.sm))
+                        .foregroundColor(colors.neutral500)
+                        .lineLimit(2)
+
+                    if let learnMoreUrl = announcement.learnMoreUrl {
+                        Button(action: {
+                            if let url = URL(string: learnMoreUrl) {
+                                #if canImport(UIKit)
+                                UIApplication.shared.open(url)
+                                #endif
                             }
+                        }) {
+                            Text("Learn more")
+                                .font(.system(size: DesignSystem.Typography.sm, weight: DesignSystem.Typography.semibold))
+                                .foregroundColor(colors.primary)
                         }
                     }
-                    .padding(.horizontal, DesignSystem.Spacing.xl)
                 }
+                .padding(.horizontal, DesignSystem.Spacing.md)
+                .padding(.vertical, DesignSystem.Spacing.sm)
+                .background(colors.border.opacity(DesignSystem.Opacity.subtle))
+                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md, style: .continuous))
+                .padding(.horizontal, DesignSystem.Spacing.xl)
+            }
 
-                Spacer()
-
-                // Action buttons
-                if configuration.primaryButton != nil || configuration.secondaryButton != nil {
-                    VStack(spacing: DesignSystem.Spacing.lg) {
-                        // Primary button
-                        if let primaryButton = configuration.primaryButton {
-                            ConfigurableButton(configuration: primaryButton, action: onTryIt ?? primaryButton.action)
-                        }
-
-                        // Secondary button
-                        if let secondaryButton = configuration.secondaryButton {
-                            ConfigurableButton(configuration: secondaryButton, action: onNotNow ?? secondaryButton.action)
-                        }
+            if configuration.primaryButton != nil || configuration.secondaryButton != nil {
+                VStack(spacing: DesignSystem.Spacing.md) {
+                    if let primaryButton = configuration.primaryButton {
+                        ConfigurableButton(configuration: primaryButton, action: onTryIt ?? primaryButton.action)
                     }
-                    .padding(.horizontal, DesignSystem.Spacing.xl)
-                    .padding(.bottom, DesignSystem.Spacing.xxl)
+
+                    if let secondaryButton = configuration.secondaryButton {
+                        ConfigurableButton(configuration: secondaryButton, action: onNotNow ?? secondaryButton.action)
+                    }
                 }
+                .padding(.horizontal, DesignSystem.Spacing.xl)
+                .padding(.bottom, DesignSystem.Spacing.xl)
             }
         }
-        .background(configuration.backgroundColor ?? Color(white: 0.2))
+        .padding(.top, announcement.imageUrl == nil ? DesignSystem.Spacing.lg : 0)
+        .background(configuration.backgroundColor ?? colors.cardBackground)
         .cornerRadius(configuration.cornerRadius)
+        .overlay(
+            RoundedRectangle(cornerRadius: configuration.cornerRadius)
+                .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
+        )
+        .overlay(alignment: .leading) {
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.sm)
+                .fill(accent)
+                .frame(width: 4)
+                .padding(.vertical, DesignSystem.Spacing.lg)
+                .offset(x: 2)
+        }
         .layeredShadow()
+    }
+
+    private var metaRow: some View {
+        HStack(spacing: DesignSystem.Spacing.sm) {
+            if let version = announcement.version {
+                Text(version)
+                    .font(.system(size: DesignSystem.Typography.xs, weight: DesignSystem.Typography.semibold))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, DesignSystem.Spacing.md)
+                    .padding(.vertical, DesignSystem.Spacing.xs + 1)
+                    .background(accent)
+                    .clipShape(Capsule())
+            }
+
+            Text(announcement.createdAt, style: .date)
+                .font(.system(size: DesignSystem.Typography.xs))
+                .foregroundColor(colors.neutral500)
+                .padding(.horizontal, DesignSystem.Spacing.md)
+                .padding(.vertical, DesignSystem.Spacing.xs + 1)
+                .background(colors.border.opacity(DesignSystem.Opacity.subtle))
+                .clipShape(Capsule())
+
+            Spacer()
+        }
+    }
+
+    private var headerMedia: some View {
+        Group {
+            if let imageUrl = announcement.imageUrl {
+                AnnouncementMediaView(imageUrl: imageUrl)
+                    .padding(.horizontal, DesignSystem.Spacing.xl)
+                    .padding(.top, DesignSystem.Spacing.xl)
+            } else {
+                VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
+                    ZStack {
+                        Circle()
+                            .fill(accent.opacity(0.16))
+                            .frame(width: 56, height: 56)
+                        Image(systemName: "sparkles")
+                            .font(.system(size: DesignSystem.Typography.lg, weight: .semibold))
+                            .foregroundColor(accent)
+                    }
+
+                    Text("Announcement")
+                        .font(.system(size: DesignSystem.Typography.sm, weight: .semibold))
+                        .foregroundColor(colors.neutral500)
+                }
+                .padding(.horizontal, DesignSystem.Spacing.xl)
+                .padding(.top, DesignSystem.Spacing.xl)
+            }
+        }
     }
 }
 
@@ -128,7 +193,14 @@ struct AnnouncementCardView: View {
 private struct ConfigurableButton: View {
     let configuration: ButtonConfiguration
     let action: (() -> Void)?
-    
+
+    @Environment(\.appGramTheme) private var theme
+    @Environment(\.colorScheme) private var colorScheme
+
+    private var colors: ColorPalette {
+        theme.resolvedColors(for: colorScheme)
+    }
+
     var body: some View {
         Button(action: {
             action?()
@@ -143,57 +215,75 @@ private struct ConfigurableButton: View {
                 .cornerRadius(configuration.cornerRadius)
                 .overlay(
                     RoundedRectangle(cornerRadius: configuration.cornerRadius)
-                        .strokeBorder(Color.clear, lineWidth: 0)
+                        .strokeBorder(resolvedBorderColor, lineWidth: resolvedBorderWidth)
                 )
         }
     }
-    
+
     private var resolvedBackgroundColor: Color? {
         switch configuration.style {
         case .primary:
-            return configuration.backgroundColor ?? .white
+            return configuration.backgroundColor ?? colors.primary
         case .secondary:
-            return nil // Transparent background
+            return colors.cardBackground.opacity(0.7)
         case .text:
-            return nil // Transparent background
+            return nil
         case .custom:
             return configuration.backgroundColor
         }
     }
-    
+
     private var resolvedForegroundColor: Color {
         switch configuration.style {
         case .primary:
-            return configuration.foregroundColor ?? .black
+            return configuration.foregroundColor ?? .white
         case .secondary, .text:
-            return configuration.foregroundColor ?? .white
+            return configuration.foregroundColor ?? colors.text
         case .custom:
-            return configuration.foregroundColor ?? .white
+            return configuration.foregroundColor ?? colors.text
         }
+    }
+
+    private var resolvedBorderColor: Color {
+        switch configuration.style {
+        case .secondary, .text, .primary:
+            return .clear
+        case .custom:
+            return configuration.foregroundColor?.opacity(0.3) ?? colors.border
+        }
+    }
+
+    private var resolvedBorderWidth: CGFloat {
+        configuration.style == .custom ? DesignSystem.BorderWidth.thin : 0
     }
 }
 
 /// A view displaying media (image or video) for the announcement.
 private struct AnnouncementMediaView: View {
     let imageUrl: String
-    
+
+    @Environment(\.appGramTheme) private var theme
+    @Environment(\.colorScheme) private var colorScheme
+
+    private var colors: ColorPalette {
+        theme.resolvedColors(for: colorScheme)
+    }
+
     private let fixedHeight: CGFloat = 200
 
     var body: some View {
         AsyncImage(url: URL(string: imageUrl)) { phase in
             switch phase {
             case .empty:
-                // Loading placeholder
                 ZStack {
                     RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
-                        .fill(Color(white: 0.3))
+                        .fill(colors.border.opacity(0.3))
                         .frame(height: fixedHeight)
 
                     ProgressView()
-                        .tint(.white)
+                        .tint(colors.primary)
                 }
             case .success(let image):
-                // Display the image with fixed height to prevent view resizing
                 image
                     .resizable()
                     .aspectRatio(contentMode: .fill)
@@ -202,30 +292,28 @@ private struct AnnouncementMediaView: View {
                     .cornerRadius(DesignSystem.CornerRadius.lg)
                     .shadowStyle(DesignSystem.Shadow.lg)
             case .failure:
-                // Error placeholder
                 ZStack {
                     RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
-                        .fill(Color(white: 0.3))
+                        .fill(colors.border.opacity(0.3))
                         .frame(height: fixedHeight)
 
                     VStack(spacing: DesignSystem.Spacing.sm) {
                         Image(systemName: "photo")
                             .font(.system(size: DesignSystem.Typography.xxxl))
-                            .foregroundColor(.white.opacity(DesignSystem.Opacity.disabled))
+                            .foregroundColor(colors.neutral500)
                         Text("Image unavailable")
                             .font(.system(size: DesignSystem.Typography.sm, weight: DesignSystem.Typography.regular))
-                            .foregroundColor(.white.opacity(DesignSystem.Opacity.disabled))
+                            .foregroundColor(colors.neutral500)
                     }
                 }
             @unknown default:
-                // Fallback placeholder
                 ZStack {
                     RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
-                        .fill(Color(white: 0.3))
+                        .fill(colors.border.opacity(0.3))
                         .frame(height: fixedHeight)
 
                     ProgressView()
-                        .tint(.white)
+                        .tint(colors.primary)
                 }
             }
         }
@@ -280,7 +368,6 @@ private struct AnnouncementFeatureRow: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: DesignSystem.Spacing.md) {
-            // Feature icon or image
             if let imageUrl = feature.imageUrl {
                 AsyncImage(url: URL(string: imageUrl)) { phase in
                     switch phase {
@@ -298,7 +385,6 @@ private struct AnnouncementFeatureRow: View {
                 featureIconPlaceholder
             }
 
-            // Feature content
             VStack(alignment: .leading, spacing: DesignSystem.Spacing.xs) {
                 Text(feature.title)
                     .font(.system(size: DesignSystem.Typography.base, weight: DesignSystem.Typography.semibold))
@@ -307,23 +393,30 @@ private struct AnnouncementFeatureRow: View {
                 if let description = feature.description {
                     Text(description)
                         .font(.system(size: DesignSystem.Typography.sm, weight: DesignSystem.Typography.regular))
-                        .foregroundColor(colors.secondary)
+                        .foregroundColor(colors.neutral500)
                         .lineSpacing(DesignSystem.Spacing.xs)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .padding(DesignSystem.Spacing.md)
+        .background(colors.background.opacity(0.6))
+        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md, style: .continuous)
+                .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.hairline)
+        )
     }
 
     private var featureIconPlaceholder: some View {
         ZStack {
             RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.sm)
-                .fill(Color.blue.opacity(DesignSystem.Opacity.disabled))
+                .fill(colors.primary.opacity(0.12))
                 .frame(width: DesignSystem.Spacing.xxxl, height: DesignSystem.Spacing.xxxl)
 
-            Image(systemName: "star.fill")
+            Image(systemName: "sparkles")
                 .font(.system(size: DesignSystem.Typography.lg))
-                .foregroundColor(.blue)
+                .foregroundColor(colors.primary)
         }
     }
 }
@@ -332,13 +425,11 @@ private struct AnnouncementFeatureRow: View {
 struct AnnouncementCardView_Previews: PreviewProvider {
     static var previews: some View {
         ZStack {
-            // Dark background to match the modal
             Color(white: 0.15)
                 .ignoresSafeArea()
-            
+
             ScrollView {
                 VStack(spacing: 20) {
-                    // Preview with image and default buttons
                     AnnouncementCardView(
                         announcement: Announcement(
                             id: "1",
@@ -379,8 +470,7 @@ struct AnnouncementCardView_Previews: PreviewProvider {
                         }
                     )
                     .padding()
-                    
-                    // Preview without image and custom buttons
+
                     AnnouncementCardView(
                         announcement: Announcement(
                             id: "2",
@@ -413,8 +503,7 @@ struct AnnouncementCardView_Previews: PreviewProvider {
                         }
                     )
                     .padding()
-                    
-                    // Preview with no buttons
+
                     AnnouncementCardView(
                         announcement: Announcement(
                             id: "3",
@@ -437,6 +526,3 @@ struct AnnouncementCardView_Previews: PreviewProvider {
     }
 }
 #endif
-
-
-
