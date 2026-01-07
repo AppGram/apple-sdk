@@ -29,36 +29,22 @@ public struct SupportTicketListView: View {
 
     public var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                // Custom Header with Title
-                VStack(alignment: .leading, spacing: DesignSystem.Spacing.lg) {
-                    Text("Support")
-                        .font(.system(size: 34, weight: .bold))
-                        .foregroundColor(colors.text)
-                        .padding(.horizontal, DesignSystem.Spacing.lg)
-                        .padding(.top, DesignSystem.Spacing.md)
+            ZStack {
+                backgroundView
 
-                    // Tab Picker
-                    Picker("Support Tab", selection: $selectedTab) {
-                        ForEach(SupportTab.allCases, id: \.self) { tab in
-                            Text(tab.rawValue).tag(tab)
-                        }
+                VStack(spacing: 0) {
+                    headerView
+
+                    // Content based on selected tab
+                    TabView(selection: $selectedTab) {
+                        newSupportView
+                            .tag(SupportTab.newSupport)
+
+                        myTicketsView
+                            .tag(SupportTab.myTickets)
                     }
-                    .pickerStyle(.segmented)
-                    .padding(.horizontal, DesignSystem.Spacing.lg)
+                    .tabViewStyle(.page(indexDisplayMode: .never))
                 }
-                .padding(.bottom, DesignSystem.Spacing.md)
-                .background(colors.background)
-
-                // Content based on selected tab
-                TabView(selection: $selectedTab) {
-                    newSupportView
-                        .tag(SupportTab.newSupport)
-
-                    myTicketsView
-                        .tag(SupportTab.myTickets)
-                }
-                .tabViewStyle(.page(indexDisplayMode: .never))
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -81,6 +67,52 @@ public struct SupportTicketListView: View {
         }
     }
 
+    private var backgroundView: some View {
+        LinearGradient(
+            colors: [colors.background, colors.neutral100],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .overlay(
+            Circle()
+                .fill(colors.neutral200.opacity(0.4))
+                .frame(width: 240, height: 240)
+                .offset(x: -140, y: -120)
+        )
+        .ignoresSafeArea()
+    }
+
+    private var headerView: some View {
+        VStack(alignment: .leading, spacing: DesignSystem.Spacing.md) {
+            VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
+                Text("Support")
+                    .font(.system(size: 34, weight: .bold, design: .serif))
+                    .foregroundColor(colors.text)
+
+                Text("Resolve issues fast with context and clear status.")
+                    .font(.system(size: DesignSystem.Typography.base, weight: DesignSystem.Typography.regular))
+                    .foregroundColor(colors.neutral500)
+            }
+
+            Picker("Support Tab", selection: $selectedTab) {
+                ForEach(SupportTab.allCases, id: \.self) { tab in
+                    Text(tab.rawValue).tag(tab)
+                }
+            }
+            .pickerStyle(.segmented)
+            .tint(colors.primary)
+        }
+        .padding(DesignSystem.Spacing.lg)
+        .background(colors.cardBackground.opacity(0.95), in: RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl))
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl)
+                .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
+        )
+        .padding(.horizontal, DesignSystem.Spacing.lg)
+        .padding(.top, DesignSystem.Spacing.md)
+        .padding(.bottom, DesignSystem.Spacing.md)
+    }
+
     @ViewBuilder
     private var newSupportView: some View {
         SupportFormSelectionView(
@@ -96,19 +128,25 @@ public struct SupportTicketListView: View {
     @ViewBuilder
     private var myTicketsView: some View {
         if viewModel.isLoadingMyTickets && viewModel.myTickets.isEmpty {
-            LoadingView()
+            supportStateContainer {
+                LoadingView()
+            }
         } else if let error = viewModel.error, viewModel.myTickets.isEmpty {
-            ErrorView(error: error) {
-                await viewModel.loadMyTickets()
+            supportStateContainer {
+                ErrorView(error: error) {
+                    await viewModel.loadMyTickets()
+                }
             }
         } else if viewModel.myTickets.isEmpty {
-            EmptyStateView(
-                icon: "ticket",
-                title: "No Tickets",
-                message: "You don't have any support tickets yet.",
-                actionTitle: "Create Ticket"
-            ) {
-                showingSubmitSheet = true
+            supportStateContainer {
+                EmptyStateView(
+                    icon: "ticket",
+                    title: "No Tickets",
+                    message: "You don't have any support tickets yet.",
+                    actionTitle: "Create Ticket"
+                ) {
+                    showingSubmitSheet = true
+                }
             }
         } else {
             myTicketsList
@@ -148,6 +186,22 @@ public struct SupportTicketListView: View {
         .background(colors.background)
         .refreshable {
             await viewModel.refreshMyTickets()
+        }
+    }
+
+    private func supportStateContainer<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        VStack(spacing: DesignSystem.Spacing.lg) {
+            Spacer(minLength: 0)
+            content()
+                .padding(DesignSystem.Spacing.lg)
+                .frame(maxWidth: .infinity)
+                .background(colors.cardBackground.opacity(0.95), in: RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl))
+                .overlay(
+                    RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl)
+                        .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
+                )
+                .padding(.horizontal, DesignSystem.Spacing.lg)
+            Spacer(minLength: 0)
         }
     }
 }

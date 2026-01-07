@@ -97,86 +97,91 @@ public struct SupportFormView: View {
     }
 
     private var formView: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: DesignSystem.Spacing.lg) {
-                // Subject field
-                VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
-                    Text("Subject")
-                        .font(.system(size: DesignSystem.Typography.base, weight: DesignSystem.Typography.semibold))
-                        .foregroundColor(colors.text)
+        ZStack {
+            backgroundView
 
-                    TextField("Brief description of your issue", text: $subject)
-                        .font(.system(size: DesignSystem.Typography.sm, weight: DesignSystem.Typography.regular))
-                        .foregroundColor(colors.text)
-                        .textFieldStyle(.plain)
-                        .padding(DesignSystem.Spacing.md)
-                        .background(colors.cardBackground)
-                        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md)
-                                .strokeBorder(fieldErrors["subject"] != nil ? colors.error : colors.neutral200, lineWidth: DesignSystem.BorderWidth.thin)
-                        )
-                        .layeredShadow()
+            ScrollView {
+                VStack(alignment: .leading, spacing: DesignSystem.Spacing.lg) {
+                    headerCard
 
-                    if let error = fieldErrors["subject"] {
-                        Text(error)
-                            .font(.system(size: DesignSystem.Typography.xs))
-                            .foregroundColor(colors.error)
+                    // Subject field
+                    VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
+                        Text("Subject")
+                            .font(.system(size: DesignSystem.Typography.base, weight: DesignSystem.Typography.semibold))
+                            .foregroundColor(colors.text)
+
+                        TextField("Brief description of your issue", text: $subject)
+                            .font(.system(size: DesignSystem.Typography.sm, weight: DesignSystem.Typography.regular))
+                            .foregroundColor(colors.text)
+                            .textFieldStyle(.plain)
+                            .padding(DesignSystem.Spacing.md)
+                            .background(colors.cardBackground)
+                            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md)
+                                    .strokeBorder(fieldErrors["subject"] != nil ? colors.error : colors.border, lineWidth: DesignSystem.BorderWidth.thin)
+                            )
+                            .layeredShadow()
+
+                        if let error = fieldErrors["subject"] {
+                            Text(error)
+                                .font(.system(size: DesignSystem.Typography.xs))
+                                .foregroundColor(colors.error)
+                        }
                     }
-                }
 
-                // Description field
-                VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
-                    Text("Description")
-                        .font(.system(size: DesignSystem.Typography.base, weight: DesignSystem.Typography.semibold))
-                        .foregroundColor(colors.text)
+                    // Description field
+                    VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
+                        Text("Description")
+                            .font(.system(size: DesignSystem.Typography.base, weight: DesignSystem.Typography.semibold))
+                            .foregroundColor(colors.text)
 
-                    TextEditor(text: $description)
-                        .font(.system(size: DesignSystem.Typography.sm, weight: DesignSystem.Typography.regular))
-                        .foregroundColor(colors.text)
-                        .scrollContentBackground(.hidden)
-                        .frame(minHeight: 120)
-                        .padding(DesignSystem.Spacing.sm)
-                        .background(colors.cardBackground)
-                        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md)
-                                .strokeBorder(fieldErrors["description"] != nil ? colors.error : colors.neutral200, lineWidth: DesignSystem.BorderWidth.thin)
-                        )
-                        .layeredShadow()
+                        TextEditor(text: $description)
+                            .font(.system(size: DesignSystem.Typography.sm, weight: DesignSystem.Typography.regular))
+                            .foregroundColor(colors.text)
+                            .scrollContentBackground(.hidden)
+                            .frame(minHeight: 120)
+                            .padding(DesignSystem.Spacing.sm)
+                            .background(colors.cardBackground)
+                            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md)
+                                    .strokeBorder(fieldErrors["description"] != nil ? colors.error : colors.border, lineWidth: DesignSystem.BorderWidth.thin)
+                            )
+                            .layeredShadow()
 
-                    if let error = fieldErrors["description"] {
-                        Text(error)
-                            .font(.system(size: DesignSystem.Typography.xs))
-                            .foregroundColor(colors.error)
+                        if let error = fieldErrors["description"] {
+                            Text(error)
+                                .font(.system(size: DesignSystem.Typography.xs))
+                                .foregroundColor(colors.error)
+                        }
                     }
-                }
 
-                // Form description
-                if let formDescription = form.description {
-                    Text(formDescription)
-                        .font(.system(size: DesignSystem.Typography.sm))
-                        .foregroundColor(colors.text.opacity(DesignSystem.Opacity.muted))
-                }
-
-                // Form fields
-                VStack(spacing: DesignSystem.Spacing.lg) {
-                    ForEach(sortedFields(form.fields)) { field in
-                        fieldView(for: field)
+                    // Form description
+                    if let formDescription = form.description {
+                        Text(formDescription)
+                            .font(.system(size: DesignSystem.Typography.sm))
+                            .foregroundColor(colors.neutral500)
                     }
-                }
 
-                // Error banner
-                if let error = error {
-                    errorBanner(error)
-                }
+                    // Form fields
+                    VStack(spacing: DesignSystem.Spacing.lg) {
+                        ForEach(sortedFields(form.fields)) { field in
+                            fieldView(for: field)
+                        }
+                    }
 
-                // Submit button
-                submitButton
+                    // Error banner
+                    if let error = error {
+                        errorBanner(error)
+                    }
+
+                    // Submit button
+                    submitButton
+                }
+                .padding(DesignSystem.Spacing.lg)
             }
-            .padding(DesignSystem.Spacing.lg)
         }
-        .background(colors.background)
     }
 
     private func sortedFields(_ fields: [FormField]) -> [FormField] {
@@ -379,44 +384,86 @@ public struct SupportFormView: View {
     }
 
     private var successView: some View {
-        VStack(spacing: DesignSystem.Spacing.xl) {
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 64))
-                .foregroundColor(colors.success)
+        ZStack {
+            backgroundView
 
-            Text("Thank You!")
-                .font(.title)
-                .fontWeight(.bold)
+            VStack(spacing: DesignSystem.Spacing.xl) {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 64))
+                    .foregroundColor(colors.success)
+
+                Text("Thank You!")
+                    .font(.title)
+                    .fontWeight(.bold)
+                    .foregroundColor(colors.text)
+
+                if let message = form.successMessage {
+                    Text(message)
+                        .font(.body)
+                        .foregroundColor(colors.neutral500)
+                        .multilineTextAlignment(.center)
+                } else {
+                    Text("Your support request has been submitted!")
+                        .font(.body)
+                        .foregroundColor(colors.neutral500)
+                        .multilineTextAlignment(.center)
+                }
+
+                Button {
+                    onDismiss()
+                } label: {
+                    Text("Done")
+                        .fontWeight(DesignSystem.Typography.semibold)
+                        .foregroundColor(colors.cardBackground)
+                        .frame(maxWidth: .infinity)
+                        .padding(DesignSystem.Spacing.md)
+                        .background(colors.primary)
+                        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md))
+                }
+                .padding(.top, DesignSystem.Spacing.md)
+            }
+            .padding(DesignSystem.Spacing.lg)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(colors.cardBackground.opacity(0.95), in: RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl))
+            .overlay(
+                RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl)
+                    .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
+            )
+            .padding(DesignSystem.Spacing.lg)
+        }
+    }
+
+    private var backgroundView: some View {
+        LinearGradient(
+            colors: [colors.background, colors.neutral100],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .overlay(
+            Circle()
+                .fill(colors.neutral200.opacity(0.35))
+                .frame(width: 240, height: 240)
+                .offset(x: 140, y: -160)
+        )
+        .ignoresSafeArea()
+    }
+
+    private var headerCard: some View {
+        VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
+            Text(form.name)
+                .font(.system(size: DesignSystem.Typography.xl, weight: DesignSystem.Typography.semibold, design: .serif))
                 .foregroundColor(colors.text)
 
-            if let message = form.successMessage {
-                Text(message)
-                    .font(.body)
-                    .foregroundColor(colors.text.opacity(0.8))
-                    .multilineTextAlignment(.center)
-            } else {
-                Text("Your support request has been submitted!")
-                    .font(.body)
-                    .foregroundColor(colors.text.opacity(0.8))
-                    .multilineTextAlignment(.center)
-            }
-
-            Button {
-                onDismiss()
-            } label: {
-                Text("Done")
-                    .fontWeight(DesignSystem.Typography.semibold)
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(DesignSystem.Spacing.md)
-                    .background(colors.primary)
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md))
-            }
-            .padding(.top, DesignSystem.Spacing.md)
+            Text("Share the details and we’ll route it to the right team.")
+                .font(.system(size: DesignSystem.Typography.base, weight: DesignSystem.Typography.regular))
+                .foregroundColor(colors.neutral500)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(DesignSystem.Spacing.lg)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(colors.background)
+        .background(colors.cardBackground.opacity(0.95), in: RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl))
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl)
+                .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
+        )
     }
 }
-

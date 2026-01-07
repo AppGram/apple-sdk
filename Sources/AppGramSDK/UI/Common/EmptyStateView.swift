@@ -29,42 +29,67 @@ public struct EmptyStateView: View {
     }
 
     public var body: some View {
-        VStack(spacing: DesignSystem.Spacing.xl) {
-            Image(systemName: icon)
-                .font(.system(size: 56))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [colors.text.opacity(0.15), colors.text.opacity(0.08)],
-                        startPoint: .top,
-                        endPoint: .bottom
+        ZStack {
+            backgroundView
+
+            VStack(spacing: DesignSystem.Spacing.xl) {
+                Image(systemName: icon)
+                    .font(.system(size: 56))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [colors.neutral500, colors.neutral300],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
                     )
-                )
 
-            Text(title)
-                .font(.system(size: DesignSystem.Typography.lg, weight: DesignSystem.Typography.semibold))
-                .foregroundColor(colors.text)
+                Text(title)
+                    .font(.system(size: DesignSystem.Typography.lg, weight: DesignSystem.Typography.semibold))
+                    .foregroundColor(colors.text)
 
-            Text(message)
-                .font(.system(size: DesignSystem.Typography.sm))
-                .foregroundColor(colors.text.opacity(DesignSystem.Opacity.muted))
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, DesignSystem.Spacing.xl)
+                Text(message)
+                    .font(.system(size: DesignSystem.Typography.sm))
+                    .foregroundColor(colors.neutral500)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, DesignSystem.Spacing.xl)
 
-            if let actionTitle = actionTitle, let action = action {
-                Button(action: action) {
-                    Text(actionTitle)
-                        .font(.system(size: DesignSystem.Typography.base, weight: DesignSystem.Typography.medium))
-                        .foregroundColor(.white)
-                        .padding(.horizontal, DesignSystem.Spacing.xl)
-                        .padding(.vertical, DesignSystem.Spacing.md)
-                        .background(colors.primary)
-                        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md))
-                        .shadowStyle(DesignSystem.Shadow.md)
+                if let actionTitle = actionTitle, let action = action {
+                    Button(action: action) {
+                        Text(actionTitle)
+                            .font(.system(size: DesignSystem.Typography.base, weight: DesignSystem.Typography.medium))
+                            .foregroundColor(colors.cardBackground)
+                            .padding(.horizontal, DesignSystem.Spacing.xl)
+                            .padding(.vertical, DesignSystem.Spacing.md)
+                            .background(colors.primary)
+                            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md))
+                            .shadowStyle(DesignSystem.Shadow.md)
+                    }
+                    .padding(.top, DesignSystem.Spacing.sm)
                 }
-                .padding(.top, DesignSystem.Spacing.sm)
             }
+            .padding(DesignSystem.Spacing.xl)
+            .frame(maxWidth: .infinity)
+            .background(colors.cardBackground.opacity(0.95), in: RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl))
+            .overlay(
+                RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl)
+                    .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
+            )
+            .padding(DesignSystem.Spacing.lg)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(colors.background)
+    }
+
+    private var backgroundView: some View {
+        LinearGradient(
+            colors: [colors.background, colors.neutral100],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .overlay(
+            Circle()
+                .fill(colors.neutral200.opacity(0.35))
+                .frame(width: 220, height: 220)
+                .offset(x: -140, y: -120)
+        )
+        .ignoresSafeArea()
     }
 }

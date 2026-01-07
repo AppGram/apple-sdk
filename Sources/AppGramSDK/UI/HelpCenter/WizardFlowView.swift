@@ -33,16 +33,19 @@ public struct WizardFlowView: View {
     }
 
     public var body: some View {
-        ScrollView {
-            VStack(spacing: 0) {
-                if viewModel.hasSteps {
-                    wizardContent
-                } else {
-                    fallbackContent
+        ZStack {
+            backgroundView
+
+            ScrollView {
+                VStack(spacing: 0) {
+                    if viewModel.hasSteps {
+                        wizardContent
+                    } else {
+                        fallbackContent
+                    }
                 }
             }
         }
-        .background(colors.background)
     }
 
     // MARK: - Wizard Content
@@ -50,6 +53,11 @@ public struct WizardFlowView: View {
     @ViewBuilder
     private var wizardContent: some View {
         VStack(spacing: DesignSystem.Spacing.xl) {
+            headerCard(
+                title: "Guided walkthrough",
+                subtitle: "Follow the steps and stay on track."
+            )
+
             // Progress Indicator
             progressIndicator
 
@@ -78,6 +86,21 @@ public struct WizardFlowView: View {
 
     private var progressIndicator: some View {
         VStack(spacing: DesignSystem.Spacing.lg) {
+            HStack {
+                Text("Step \(viewModel.currentStep + 1) of \(viewModel.totalSteps)")
+                    .font(.system(size: DesignSystem.Typography.sm, weight: DesignSystem.Typography.medium))
+                    .foregroundColor(colors.neutral500)
+
+                Spacer()
+
+                Text("\(viewModel.progressPercentage)%")
+                    .font(.system(size: DesignSystem.Typography.sm, weight: DesignSystem.Typography.semibold))
+                    .foregroundColor(colors.primary)
+                    .padding(.horizontal, DesignSystem.Spacing.sm)
+                    .padding(.vertical, DesignSystem.Spacing.xs)
+                    .background(colors.primary.opacity(0.12), in: Capsule())
+            }
+
             // Progress Bar
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
@@ -96,12 +119,21 @@ public struct WizardFlowView: View {
             .frame(height: 4)
 
             // Step Indicators
-            HStack(spacing: DesignSystem.Spacing.md) {
-                ForEach(0..<viewModel.totalSteps, id: \.self) { index in
-                    stepIndicator(index: index)
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: DesignSystem.Spacing.md) {
+                    ForEach(0..<viewModel.totalSteps, id: \.self) { index in
+                        stepIndicator(index: index)
+                    }
                 }
+                .padding(.horizontal, DesignSystem.Spacing.xs)
             }
         }
+        .padding(DesignSystem.Spacing.lg)
+        .background(colors.cardBackground.opacity(0.95), in: RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl))
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl)
+                .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
+        )
     }
 
     private func stepIndicator(index: Int) -> some View {
@@ -116,6 +148,10 @@ public struct WizardFlowView: View {
                     Circle()
                         .fill(indicatorColor(for: state))
                         .frame(width: 32, height: 32)
+                        .overlay(
+                            Circle()
+                                .strokeBorder(colors.border.opacity(0.4), lineWidth: 1)
+                        )
 
                     if state == .completed {
                         Image(systemName: "checkmark")
@@ -131,7 +167,7 @@ public struct WizardFlowView: View {
                 // Step number label
                 Text("Step \(index + 1)")
                     .font(.system(size: 11))
-                    .foregroundColor(state == .current ? colors.text : colors.text.opacity(DesignSystem.Opacity.disabled))
+                    .foregroundColor(state == .current ? colors.text : colors.neutral500)
             }
         }
         .buttonStyle(.plain)
@@ -173,13 +209,16 @@ public struct WizardFlowView: View {
             HTMLContentView(
                 htmlContent: step.content,
                 textColor: colors.text,
-                backgroundColor: colors.background
+                backgroundColor: colors.cardBackground
             )
             .id(step.id) // Use step ID as key for animations
         }
         .padding(DesignSystem.Spacing.lg)
-        .background(colors.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg))
+        .background(colors.cardBackground, in: RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg))
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
+                .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
+        )
         .layeredShadow()
     }
 
@@ -208,7 +247,7 @@ public struct WizardFlowView: View {
 
                 Text("Related Article")
                     .font(.system(size: DesignSystem.Typography.sm, weight: DesignSystem.Typography.semibold))
-                    .foregroundColor(colors.text.opacity(DesignSystem.Opacity.muted))
+                    .foregroundColor(colors.neutral500)
 
                 Spacer()
             }
@@ -221,7 +260,7 @@ public struct WizardFlowView: View {
                 if let excerpt = article.excerpt {
                     Text(excerpt)
                         .font(.system(size: DesignSystem.Typography.sm))
-                        .foregroundColor(colors.text.opacity(DesignSystem.Opacity.muted))
+                        .foregroundColor(colors.neutral500)
                         .lineLimit(2)
                 }
 
@@ -233,8 +272,11 @@ public struct WizardFlowView: View {
                 )
             }
             .padding(DesignSystem.Spacing.lg)
-            .background(colors.cardBackground.opacity(DesignSystem.Opacity.disabled))
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md))
+            .background(colors.cardBackground.opacity(0.95), in: RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md))
+            .overlay(
+                RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md)
+                    .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
+            )
         }
     }
 
@@ -255,12 +297,12 @@ public struct WizardFlowView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .frame(height: 48)
-                .background(viewModel.canGoBack ? colors.cardBackground : colors.border.opacity(DesignSystem.Opacity.disabled))
-                .foregroundColor(viewModel.canGoBack ? colors.text : colors.text.opacity(DesignSystem.Opacity.disabled))
+                .background(viewModel.canGoBack ? colors.cardBackground : colors.cardBackground.opacity(0.6))
+                .foregroundColor(viewModel.canGoBack ? colors.text : colors.neutral500)
                 .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md))
                 .overlay(
                     RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md)
-                        .strokeBorder(colors.neutral200, lineWidth: DesignSystem.BorderWidth.thin)
+                        .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
                 )
             }
             .disabled(!viewModel.canGoBack)
@@ -272,7 +314,7 @@ public struct WizardFlowView: View {
                 }
             } label: {
                 HStack {
-                    Text(viewModel.isLastStep ? "Complete Guide" : "Next Step")
+                    Text(viewModel.isLastStep ? "Finish" : "Next Step")
                         .font(.system(size: DesignSystem.Typography.base, weight: DesignSystem.Typography.semibold))
 
                     if !viewModel.isLastStep {
@@ -286,7 +328,7 @@ public struct WizardFlowView: View {
                 .foregroundColor(.white)
                 .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md))
             }
-            .disabled(viewModel.isLastStep)
+            .disabled(!viewModel.canGoForward)
         }
     }
 
@@ -297,7 +339,7 @@ public struct WizardFlowView: View {
             Spacer()
             Text("\(viewModel.progressPercentage)% Complete")
                 .font(.system(size: DesignSystem.Typography.sm, weight: DesignSystem.Typography.medium))
-                .foregroundColor(colors.text.opacity(DesignSystem.Opacity.muted))
+                .foregroundColor(colors.neutral500)
             Spacer()
         }
         .padding(.top, DesignSystem.Spacing.sm)
@@ -343,7 +385,7 @@ public struct WizardFlowView: View {
             if let excerpt = article.excerpt {
                 Text(excerpt)
                     .font(.system(size: DesignSystem.Typography.sm))
-                    .foregroundColor(colors.text.opacity(DesignSystem.Opacity.muted))
+                    .foregroundColor(colors.neutral500)
                     .lineLimit(3)
             }
 
@@ -354,8 +396,45 @@ public struct WizardFlowView: View {
             )
         }
         .padding(DesignSystem.Spacing.lg)
-        .background(colors.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg))
+        .background(colors.cardBackground, in: RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg))
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
+                .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
+        )
         .layeredShadow()
+    }
+
+    private var backgroundView: some View {
+        LinearGradient(
+            colors: [colors.background, colors.neutral100],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .overlay(
+            Circle()
+                .fill(colors.neutral200.opacity(0.35))
+                .frame(width: 240, height: 240)
+                .offset(x: -140, y: -140)
+        )
+        .ignoresSafeArea()
+    }
+
+    private func headerCard(title: String, subtitle: String) -> some View {
+        VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
+            Text(title)
+                .font(.system(size: DesignSystem.Typography.xl, weight: DesignSystem.Typography.semibold, design: .serif))
+                .foregroundColor(colors.text)
+
+            Text(subtitle)
+                .font(.system(size: DesignSystem.Typography.base, weight: DesignSystem.Typography.regular))
+                .foregroundColor(colors.neutral500)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(DesignSystem.Spacing.lg)
+        .background(colors.cardBackground.opacity(0.95), in: RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl))
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl)
+                .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
+        )
     }
 }

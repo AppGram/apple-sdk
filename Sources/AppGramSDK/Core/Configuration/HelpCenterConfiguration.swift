@@ -73,12 +73,32 @@ public struct HelpCenterConfiguration: Sendable {
     /// - `.sheet`: Present the article in a sheet modal
     /// - `.replace`: Replace the current decision tree view with the article view
     public var articleDisplayBehavior: ArticleDisplayBehavior
+
+    /// Optional labels for decision tree UI copy.
+    public var decisionTreeTitle: String?
+    public var decisionTreeSubtitle: String?
+    public var decisionTreePrompt: String?
+    public var decisionTreeYesLabel: String?
+    public var decisionTreeNoLabel: String?
+    public var decisionTreeSolutionTitle: String?
+    public var decisionTreeViewArticleLabel: String?
+    public var decisionTreeBackLabel: String?
+    public var decisionTreeRestartLabel: String?
     
     public init(
         yesButtonColor: Color? = nil,
         noButtonColor: Color? = nil,
         decisionTreeButtonColor: Color? = nil,
-        articleDisplayBehavior: ArticleDisplayBehavior = .inline
+        articleDisplayBehavior: ArticleDisplayBehavior = .inline,
+        decisionTreeTitle: String? = nil,
+        decisionTreeSubtitle: String? = nil,
+        decisionTreePrompt: String? = nil,
+        decisionTreeYesLabel: String? = nil,
+        decisionTreeNoLabel: String? = nil,
+        decisionTreeSolutionTitle: String? = nil,
+        decisionTreeViewArticleLabel: String? = nil,
+        decisionTreeBackLabel: String? = nil,
+        decisionTreeRestartLabel: String? = nil
     ) {
         // Store legacy color separately
         self._legacyButtonColor = decisionTreeButtonColor
@@ -92,6 +112,15 @@ public struct HelpCenterConfiguration: Sendable {
             self.noButtonColor = noButtonColor
         }
         self.articleDisplayBehavior = articleDisplayBehavior
+        self.decisionTreeTitle = decisionTreeTitle
+        self.decisionTreeSubtitle = decisionTreeSubtitle
+        self.decisionTreePrompt = decisionTreePrompt
+        self.decisionTreeYesLabel = decisionTreeYesLabel
+        self.decisionTreeNoLabel = decisionTreeNoLabel
+        self.decisionTreeSolutionTitle = decisionTreeSolutionTitle
+        self.decisionTreeViewArticleLabel = decisionTreeViewArticleLabel
+        self.decisionTreeBackLabel = decisionTreeBackLabel
+        self.decisionTreeRestartLabel = decisionTreeRestartLabel
     }
     
     public static let `default` = HelpCenterConfiguration()

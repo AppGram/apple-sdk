@@ -52,7 +52,7 @@ public struct DecisionTreeFlowView: View {
         if configuration.yesButtonColor == nil, let legacyColor = configuration.decisionTreeButtonColor {
             return legacyColor
         }
-        return colors.primary
+        return colors.error
     }
 
     public init(
@@ -66,16 +66,19 @@ public struct DecisionTreeFlowView: View {
     }
 
     public var body: some View {
-        ScrollView {
-            VStack(spacing: 0) {
-                if viewModel.hasNodes {
-                    decisionTreeContent
-                } else {
-                    fallbackContent
+        ZStack {
+            backgroundView
+
+            ScrollView {
+                VStack(spacing: 0) {
+                    if viewModel.hasNodes {
+                        decisionTreeContent
+                    } else {
+                        fallbackContent
+                    }
                 }
             }
         }
-        .background(colors.background)
     }
 
     // MARK: - Decision Tree Content
@@ -83,6 +86,11 @@ public struct DecisionTreeFlowView: View {
     @ViewBuilder
     private var decisionTreeContent: some View {
         VStack(spacing: DesignSystem.Spacing.xl) {
+            headerCard(
+                title: configuration.decisionTreeTitle ?? "Decision Tree",
+                subtitle: configuration.decisionTreeSubtitle ?? "Answer a few quick questions to find the right solution."
+            )
+
             // Progress Indicator
             progressIndicator
 
@@ -116,21 +124,40 @@ public struct DecisionTreeFlowView: View {
                 if viewModel.linkedArticle != nil {
                     Text("Solution found after \(viewModel.nodeHistory.count) question\(viewModel.nodeHistory.count == 1 ? "" : "s")")
                         .font(.system(size: DesignSystem.Typography.sm, weight: DesignSystem.Typography.medium))
-                        .foregroundColor(colors.text.opacity(DesignSystem.Opacity.muted))
+                        .foregroundColor(colors.neutral500)
                 } else {
                     Text("Question \(viewModel.currentQuestionNumber)")
                         .font(.system(size: DesignSystem.Typography.sm, weight: DesignSystem.Typography.medium))
-                        .foregroundColor(colors.text.opacity(DesignSystem.Opacity.muted))
+                        .foregroundColor(colors.neutral500)
                 }
                 Spacer()
+
+                if !viewModel.nodes.isEmpty {
+                    Text("\(viewModel.currentQuestionNumber)/\(viewModel.nodes.count)")
+                        .font(.system(size: DesignSystem.Typography.xs, weight: DesignSystem.Typography.semibold))
+                        .foregroundColor(colors.primary)
+                        .padding(.horizontal, DesignSystem.Spacing.sm)
+                        .padding(.vertical, DesignSystem.Spacing.xs)
+                        .background(colors.primary.opacity(0.12), in: Capsule())
+                }
             }
         }
+        .padding(DesignSystem.Spacing.lg)
+        .background(colors.cardBackground.opacity(0.95), in: RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl))
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl)
+                .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
+        )
     }
 
     // MARK: - Question View
 
     private func questionView(_ node: HelpDecisionNode) -> some View {
         VStack(alignment: .leading, spacing: DesignSystem.Spacing.xl) {
+            Text(configuration.decisionTreePrompt ?? "Choose an answer")
+                .font(.system(size: DesignSystem.Typography.sm, weight: DesignSystem.Typography.medium))
+                .foregroundColor(colors.neutral500)
+
             // Question Text
             Text(node.question)
                 .font(.system(size: DesignSystem.Typography.xxl, weight: DesignSystem.Typography.bold))
@@ -143,7 +170,7 @@ public struct DecisionTreeFlowView: View {
                 // Yes Button (only shown if answer_yes_node_id exists)
                 if let _ = node.answerYesNodeId {
                     answerButton(
-                        text: "Yes",
+                        text: configuration.decisionTreeYesLabel ?? "Yes",
                         answer: .yes,
                         icon: "checkmark.circle.fill",
                         color: yesButtonColor
@@ -153,7 +180,7 @@ public struct DecisionTreeFlowView: View {
                 // No Button (only shown if answer_no_node_id exists)
                 if let _ = node.answerNoNodeId {
                     answerButton(
-                        text: "No",
+                        text: configuration.decisionTreeNoLabel ?? "No",
                         answer: .no,
                         icon: "xmark.circle.fill",
                         color: noButtonColor
@@ -162,7 +189,11 @@ public struct DecisionTreeFlowView: View {
             }
         }
         .padding(DesignSystem.Spacing.xl)
-        .background(colors.cardBackground)
+        .background(colors.cardBackground, in: RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg))
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
+                .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
+        )
         .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg))
         .layeredShadow()
     }
@@ -172,8 +203,13 @@ public struct DecisionTreeFlowView: View {
             viewModel.handleAnswer(answer)
         } label: {
             HStack {
-                Image(systemName: icon)
-                    .font(.system(size: DesignSystem.Typography.lg, weight: DesignSystem.Typography.semibold))
+                ZStack {
+                    Circle()
+                        .fill(colors.cardBackground.opacity(0.25))
+                        .frame(width: 32, height: 32)
+                    Image(systemName: icon)
+                        .font(.system(size: DesignSystem.Typography.sm, weight: DesignSystem.Typography.semibold))
+                }
 
                 Text(text)
                     .font(.system(size: DesignSystem.Typography.lg, weight: DesignSystem.Typography.semibold))
@@ -217,7 +253,7 @@ public struct DecisionTreeFlowView: View {
                     .font(.system(size: DesignSystem.Typography.xxl))
                     .foregroundColor(yesButtonColor)
 
-                Text("We found a solution!")
+                Text(configuration.decisionTreeSolutionTitle ?? "We found a solution!")
                     .font(.system(size: DesignSystem.Typography.xxl, weight: DesignSystem.Typography.bold))
                     .foregroundColor(colors.text)
 
@@ -233,20 +269,23 @@ public struct DecisionTreeFlowView: View {
                 if let excerpt = article.excerpt {
                     Text(excerpt)
                         .font(.system(size: DesignSystem.Typography.sm))
-                        .foregroundColor(colors.text.opacity(DesignSystem.Opacity.muted))
+                        .foregroundColor(colors.neutral500)
                         .lineLimit(3)
                 }
             }
             .padding(DesignSystem.Spacing.lg)
-            .background(colors.cardBackground.opacity(DesignSystem.Opacity.disabled))
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md))
+            .background(colors.cardBackground.opacity(0.95), in: RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md))
+            .overlay(
+                RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md)
+                    .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
+            )
 
             // Open Article Button
             Button {
                 onArticleSelected?(article)
             } label: {
                 HStack {
-                    Text("View Article")
+                    Text(configuration.decisionTreeViewArticleLabel ?? "View Article")
                         .font(.system(size: DesignSystem.Typography.base, weight: DesignSystem.Typography.semibold))
 
                     Spacer()
@@ -264,7 +303,11 @@ public struct DecisionTreeFlowView: View {
             .buttonStyle(.plain)
         }
         .padding(DesignSystem.Spacing.xl)
-        .background(colors.cardBackground)
+        .background(colors.cardBackground, in: RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg))
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
+                .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
+        )
         .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg))
         .layeredShadow()
     }
@@ -295,7 +338,7 @@ public struct DecisionTreeFlowView: View {
                 if let excerpt = article.excerpt {
                     Text(excerpt)
                         .font(.system(size: DesignSystem.Typography.sm))
-                        .foregroundColor(colors.text.opacity(DesignSystem.Opacity.muted))
+                        .foregroundColor(colors.neutral500)
                         .lineLimit(3)
                 }
 
@@ -307,11 +350,18 @@ public struct DecisionTreeFlowView: View {
                 )
             }
             .padding(DesignSystem.Spacing.lg)
-            .background(colors.cardBackground.opacity(DesignSystem.Opacity.disabled))
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md))
+            .background(colors.cardBackground.opacity(0.95), in: RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md))
+            .overlay(
+                RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md)
+                    .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
+            )
         }
         .padding(DesignSystem.Spacing.xl)
-        .background(colors.cardBackground)
+        .background(colors.cardBackground, in: RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg))
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
+                .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
+        )
         .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg))
         .layeredShadow()
     }
@@ -328,17 +378,17 @@ public struct DecisionTreeFlowView: View {
                     Image(systemName: "chevron.left")
                         .font(.system(size: DesignSystem.Typography.sm, weight: DesignSystem.Typography.semibold))
 
-                    Text("Back")
+                    Text(configuration.decisionTreeBackLabel ?? "Back")
                         .font(.system(size: DesignSystem.Typography.base, weight: DesignSystem.Typography.semibold))
                 }
                 .frame(maxWidth: .infinity)
                 .frame(height: 48)
-                .background(viewModel.canGoBack ? colors.cardBackground : colors.border.opacity(DesignSystem.Opacity.disabled))
-                .foregroundColor(viewModel.canGoBack ? colors.text : colors.text.opacity(DesignSystem.Opacity.disabled))
+                .background(viewModel.canGoBack ? colors.cardBackground : colors.cardBackground.opacity(0.6))
+                .foregroundColor(viewModel.canGoBack ? colors.text : colors.neutral500)
                 .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md))
                 .overlay(
                     RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md)
-                        .strokeBorder(colors.neutral200, lineWidth: DesignSystem.BorderWidth.thin)
+                        .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
                 )
             }
             .disabled(!viewModel.canGoBack)
@@ -351,7 +401,7 @@ public struct DecisionTreeFlowView: View {
                     Image(systemName: "arrow.counterclockwise")
                         .font(.system(size: DesignSystem.Typography.sm, weight: DesignSystem.Typography.semibold))
 
-                    Text("Restart")
+                    Text(configuration.decisionTreeRestartLabel ?? "Restart")
                         .font(.system(size: DesignSystem.Typography.base, weight: DesignSystem.Typography.semibold))
                 }
                 .frame(maxWidth: .infinity)
@@ -361,7 +411,7 @@ public struct DecisionTreeFlowView: View {
                 .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md))
                 .overlay(
                     RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md)
-                        .strokeBorder(colors.neutral200, lineWidth: DesignSystem.BorderWidth.thin)
+                        .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
                 )
             }
         }
@@ -404,12 +454,12 @@ public struct DecisionTreeFlowView: View {
                 .font(.system(size: DesignSystem.Typography.lg, weight: DesignSystem.Typography.semibold))
                 .foregroundColor(colors.text)
 
-            if let excerpt = article.excerpt {
-                Text(excerpt)
-                    .font(.system(size: DesignSystem.Typography.sm))
-                    .foregroundColor(colors.text.opacity(DesignSystem.Opacity.muted))
-                    .lineLimit(3)
-            }
+                if let excerpt = article.excerpt {
+                    Text(excerpt)
+                        .font(.system(size: DesignSystem.Typography.sm))
+                        .foregroundColor(colors.neutral500)
+                        .lineLimit(3)
+                }
 
             HTMLContentView(
                 htmlContent: article.content,
@@ -418,8 +468,45 @@ public struct DecisionTreeFlowView: View {
             )
         }
         .padding(DesignSystem.Spacing.lg)
-        .background(colors.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg))
+        .background(colors.cardBackground, in: RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg))
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
+                .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
+        )
         .layeredShadow()
+    }
+
+    private var backgroundView: some View {
+        LinearGradient(
+            colors: [colors.background, colors.neutral100],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .overlay(
+            Circle()
+                .fill(colors.neutral200.opacity(0.35))
+                .frame(width: 240, height: 240)
+                .offset(x: 140, y: -140)
+        )
+        .ignoresSafeArea()
+    }
+
+    private func headerCard(title: String, subtitle: String) -> some View {
+        VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
+            Text(title)
+                .font(.system(size: DesignSystem.Typography.xl, weight: DesignSystem.Typography.semibold, design: .serif))
+                .foregroundColor(colors.text)
+
+            Text(subtitle)
+                .font(.system(size: DesignSystem.Typography.base, weight: DesignSystem.Typography.regular))
+                .foregroundColor(colors.neutral500)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(DesignSystem.Spacing.lg)
+        .background(colors.cardBackground.opacity(0.95), in: RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl))
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl)
+                .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
+        )
     }
 }

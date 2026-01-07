@@ -33,10 +33,18 @@ public struct SupportMessageView: View {
                     if message.isFromSupport {
                         Text("Support")
                             .font(.system(size: DesignSystem.Typography.xs, weight: DesignSystem.Typography.semibold))
-                            .foregroundColor(.white)
+                            .foregroundColor(colors.cardBackground)
                             .padding(.horizontal, DesignSystem.Spacing.xs)
                             .padding(.vertical, DesignSystem.Spacing.xs)
                             .background(colors.primary)
+                            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xs))
+                    } else {
+                        Text("You")
+                            .font(.system(size: DesignSystem.Typography.xs, weight: DesignSystem.Typography.semibold))
+                            .foregroundColor(colors.neutral600)
+                            .padding(.horizontal, DesignSystem.Spacing.xs)
+                            .padding(.vertical, DesignSystem.Spacing.xs)
+                            .background(colors.neutral200.opacity(0.6))
                             .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xs))
                     }
 
@@ -47,10 +55,20 @@ public struct SupportMessageView: View {
 
                 Text(message.content)
                     .font(.system(size: DesignSystem.Typography.base, weight: DesignSystem.Typography.regular))
-                    .foregroundColor(message.isFromSupport ? .white : colors.text)
+                    .foregroundColor(message.isFromSupport ? colors.cardBackground : colors.text)
                     .padding(DesignSystem.Spacing.lg)
-                    .background(message.isFromSupport ? colors.primary : colors.cardBackground)
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg))
+                    .background(
+                        RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
+                            .fill(message.isFromSupport ? colors.primary : colors.cardBackground)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
+                            .strokeBorder(
+                                message.isFromSupport ? Color.clear : colors.border,
+                                lineWidth: DesignSystem.BorderWidth.thin
+                            )
+                    )
+                    .layeredShadow()
 
                 if let attachments = message.attachments, !attachments.isEmpty {
                     HStack(spacing: DesignSystem.Spacing.sm) {

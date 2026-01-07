@@ -28,37 +28,40 @@ public struct HelpCenterView: View {
 
     public var body: some View {
         NavigationStack {
-            content
-                .navigationTitle("Help Center")
-                .searchable(
-                    text: $viewModel.searchQuery,
-                    prompt: "Search articles..."
-                )
-                .navigationDestination(item: $selectedCollection) { collection in
-                    collectionDetailView(collection)
-                }
-                .navigationDestination(item: $selectedFlow) { flow in
-                    flowDetailView(flow)
-                }
-                .navigationDestination(item: $selectedArticle) { article in
+            ZStack {
+                backgroundView
+                content
+            }
+            .navigationTitle("Help Center")
+            .searchable(
+                text: $viewModel.searchQuery,
+                prompt: "Search articles..."
+            )
+            .navigationDestination(item: $selectedCollection) { collection in
+                collectionDetailView(collection)
+            }
+            .navigationDestination(item: $selectedFlow) { flow in
+                flowDetailView(flow)
+            }
+            .navigationDestination(item: $selectedArticle) { article in
+                HelpArticleDetailView(article: article)
+            }
+            .sheet(item: $articleSheet) { article in
+                NavigationStack {
                     HelpArticleDetailView(article: article)
-                }
-                .sheet(item: $articleSheet) { article in
-                    NavigationStack {
-                        HelpArticleDetailView(article: article)
-                            .navigationTitle(article.title)
-                            .navigationBarTitleDisplayMode(.inline)
-                        #if os(iOS)
-                            .toolbar {
-                                ToolbarItem(placement: .navigationBarTrailing) {
-                                    Button("Done") {
-                                        articleSheet = nil
-                                    }
+                        .navigationTitle(article.title)
+                        .navigationBarTitleDisplayMode(.inline)
+                    #if os(iOS)
+                        .toolbar {
+                            ToolbarItem(placement: .navigationBarTrailing) {
+                                Button("Done") {
+                                    articleSheet = nil
                                 }
                             }
-                        #endif
-                    }
+                        }
+                    #endif
                 }
+            }
         }
         .task {
             await viewModel.loadCollections()
@@ -107,45 +110,51 @@ public struct HelpCenterView: View {
 
     private var collectionsView: some View {
         ScrollView {
-            LazyVStack(spacing: DesignSystem.Spacing.md) {
-                // Show flows first
-                ForEach(viewModel.flows) { flow in
-                    HelpFlowCard(flow: flow)
-                        .id("flow-\(flow.id)")
-                        .onTapGesture {
-                            // Initialize appropriate view model before navigation
-                            if flow.displayType == "wizard" {
-                                let vm = WizardViewModel()
-                                vm.loadFlow(flow)
-                                wizardViewModel = vm
-                                decisionTreeViewModel = nil
-                            } else if flow.displayType == "decision_tree" {
-                                let vm = DecisionTreeViewModel()
-                                vm.loadFlow(flow)
-                                decisionTreeViewModel = vm
-                                wizardViewModel = nil
-                            } else {
-                                wizardViewModel = nil
-                                decisionTreeViewModel = nil
-                            }
-                            selectedFlow = flow
-                        }
-                }
+            VStack(spacing: DesignSystem.Spacing.lg) {
+                headerCard(
+                    title: "How can we help?",
+                    subtitle: "Browse flows and collections or search for answers."
+                )
 
-                // Then show collections (only if they're not duplicates of flows)
-                // Deduplicate by checking if collection ID exists in flows
-                let flowIds = Set(viewModel.flows.map { $0.id })
-                ForEach(viewModel.collections.filter { !flowIds.contains($0.id) }) { collection in
-                    HelpCollectionCard(collection: collection)
-                        .id("collection-\(collection.id)")
-                        .onTapGesture {
-                            selectedCollection = collection
-                        }
+                LazyVStack(spacing: DesignSystem.Spacing.md) {
+                    // Show flows first
+                    ForEach(viewModel.flows) { flow in
+                        HelpFlowCard(flow: flow)
+                            .id("flow-\(flow.id)")
+                            .onTapGesture {
+                                // Initialize appropriate view model before navigation
+                                if flow.displayType == "wizard" {
+                                    let vm = WizardViewModel()
+                                    vm.loadFlow(flow)
+                                    wizardViewModel = vm
+                                    decisionTreeViewModel = nil
+                                } else if flow.displayType == "decision_tree" {
+                                    let vm = DecisionTreeViewModel()
+                                    vm.loadFlow(flow)
+                                    decisionTreeViewModel = vm
+                                    wizardViewModel = nil
+                                } else {
+                                    wizardViewModel = nil
+                                    decisionTreeViewModel = nil
+                                }
+                                selectedFlow = flow
+                            }
+                    }
+
+                    // Then show collections (only if they're not duplicates of flows)
+                    // Deduplicate by checking if collection ID exists in flows
+                    let flowIds = Set(viewModel.flows.map { $0.id })
+                    ForEach(viewModel.collections.filter { !flowIds.contains($0.id) }) { collection in
+                        HelpCollectionCard(collection: collection)
+                            .id("collection-\(collection.id)")
+                            .onTapGesture {
+                                selectedCollection = collection
+                            }
+                    }
                 }
             }
             .padding(DesignSystem.Spacing.lg)
         }
-        .background(colors.background)
         .refreshable {
             await viewModel.refresh()
         }
@@ -161,17 +170,23 @@ public struct HelpCenterView: View {
                 )
             } else {
                 ScrollView {
-                    LazyVStack(spacing: DesignSystem.Spacing.sm) {
-                        ForEach(viewModel.filteredArticles) { article in
-                            HelpArticleCard(article: article)
-                                .onTapGesture {
-                                    selectedArticle = article
-                                }
+                    VStack(spacing: DesignSystem.Spacing.lg) {
+                        headerCard(
+                            title: "Search results",
+                            subtitle: "\"\(viewModel.searchQuery)\""
+                        )
+
+                        LazyVStack(spacing: DesignSystem.Spacing.sm) {
+                            ForEach(viewModel.filteredArticles) { article in
+                                HelpArticleCard(article: article)
+                                    .onTapGesture {
+                                        selectedArticle = article
+                                    }
+                            }
                         }
                     }
                     .padding(DesignSystem.Spacing.lg)
                 }
-                .background(colors.background)
             }
         }
     }
@@ -179,11 +194,10 @@ public struct HelpCenterView: View {
     private func collectionDetailView(_ collection: HelpCollection) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: DesignSystem.Spacing.lg) {
-                if let description = collection.description {
-                    Text(description)
-                        .font(.system(size: DesignSystem.Typography.sm))
-                        .foregroundColor(colors.text.opacity(DesignSystem.Opacity.muted))
-                }
+                headerCard(
+                    title: collection.name,
+                    subtitle: collection.description ?? "Browse articles in this collection."
+                )
 
                 if let articles = collection.articles, !articles.isEmpty {
                     LazyVStack(spacing: DesignSystem.Spacing.sm) {
@@ -204,7 +218,6 @@ public struct HelpCenterView: View {
             }
             .padding(DesignSystem.Spacing.lg)
         }
-        .background(colors.background)
         .navigationTitle(collection.name)
     }
 
@@ -221,7 +234,6 @@ public struct HelpCenterView: View {
                 defaultFlowView(flow)
             }
         }
-        .background(colors.background)
     }
     
     @ViewBuilder
@@ -299,18 +311,15 @@ public struct HelpCenterView: View {
     private func defaultFlowView(_ flow: HelpFlow) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: DesignSystem.Spacing.lg) {
-                if let description = flow.description {
-                    Text(description)
-                        .font(.system(size: DesignSystem.Typography.sm))
-                        .foregroundColor(colors.text.opacity(DesignSystem.Opacity.muted))
-                        .padding(.horizontal, DesignSystem.Spacing.lg)
-                }
+                headerCard(
+                    title: flow.name,
+                    subtitle: flow.description ?? "Explore helpful articles."
+                )
 
                 if let articles = flow.articles, !articles.isEmpty {
                     LazyVStack(spacing: DesignSystem.Spacing.sm) {
                         ForEach(articles.filter { $0.isPublished }) { article in
                             HelpArticleCard(article: article)
-                                .padding(.horizontal, DesignSystem.Spacing.lg)
                                 .onTapGesture {
                                     selectedArticle = article
                                 }
@@ -322,11 +331,45 @@ public struct HelpCenterView: View {
                         title: "No Articles",
                         message: "This flow doesn't have any articles yet."
                     )
-                    .padding(DesignSystem.Spacing.lg)
+                    .padding(.top, DesignSystem.Spacing.md)
                 }
             }
-            .padding(.vertical, DesignSystem.Spacing.lg)
+            .padding(DesignSystem.Spacing.lg)
         }
         .navigationTitle(flow.name)
+    }
+
+    private var backgroundView: some View {
+        LinearGradient(
+            colors: [colors.background, colors.neutral100],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .overlay(
+            Circle()
+                .fill(colors.neutral200.opacity(0.35))
+                .frame(width: 240, height: 240)
+                .offset(x: -140, y: -140)
+        )
+        .ignoresSafeArea()
+    }
+
+    private func headerCard(title: String, subtitle: String) -> some View {
+        VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
+            Text(title)
+                .font(.system(size: DesignSystem.Typography.xl, weight: DesignSystem.Typography.semibold, design: .serif))
+                .foregroundColor(colors.text)
+
+            Text(subtitle)
+                .font(.system(size: DesignSystem.Typography.base, weight: DesignSystem.Typography.regular))
+                .foregroundColor(colors.neutral500)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(DesignSystem.Spacing.lg)
+        .background(colors.cardBackground.opacity(0.95), in: RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl))
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl)
+                .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
+        )
     }
 }

@@ -15,38 +15,72 @@ public struct HelpArticleDetailView: View {
     }
 
     public var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: DesignSystem.Spacing.lg) {
-                Text(article.title)
-                    .font(.system(size: DesignSystem.Typography.xxl, weight: DesignSystem.Typography.bold))
-                    .foregroundColor(colors.text)
+        ZStack {
+            backgroundView
 
-                if let excerpt = article.excerpt, !excerpt.isEmpty {
-                    Text(excerpt)
-                        .font(.system(size: DesignSystem.Typography.sm))
-                        .foregroundColor(colors.text.opacity(DesignSystem.Opacity.muted))
-                        .fixedSize(horizontal: false, vertical: true)
+            ScrollView {
+                VStack(alignment: .leading, spacing: DesignSystem.Spacing.lg) {
+                    headerCard
+
+                    HTMLContentView(
+                        htmlContent: article.content,
+                        textColor: colors.text,
+                        backgroundColor: colors.cardBackground
+                    )
+                    .padding(DesignSystem.Spacing.lg)
+                    .background(colors.cardBackground, in: RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
+                            .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
+                    )
                 }
-
-                if let updatedAt = article.updatedAt {
-                    Text("Last updated: \(formattedDate(updatedAt))")
-                        .font(.system(size: DesignSystem.Typography.xs))
-                        .foregroundColor(colors.text.opacity(DesignSystem.Opacity.disabled))
-                }
-
-                Divider()
-
-                HTMLContentView(
-                    htmlContent: article.content,
-                    textColor: colors.text,
-                    backgroundColor: colors.background
-                )
+                .padding(DesignSystem.Spacing.lg)
             }
-            .padding(DesignSystem.Spacing.lg)
         }
-        .background(colors.background)
         .navigationTitle("Article")
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var headerCard: some View {
+        VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
+            Text(article.title)
+                .font(.system(size: DesignSystem.Typography.xxl, weight: DesignSystem.Typography.bold))
+                .foregroundColor(colors.text)
+
+            if let excerpt = article.excerpt, !excerpt.isEmpty {
+                Text(excerpt)
+                    .font(.system(size: DesignSystem.Typography.sm))
+                    .foregroundColor(colors.neutral500)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            if let updatedAt = article.updatedAt {
+                Text("Last updated: \(formattedDate(updatedAt))")
+                    .font(.system(size: DesignSystem.Typography.xs))
+                    .foregroundColor(colors.neutral500)
+            }
+        }
+        .padding(DesignSystem.Spacing.lg)
+        .background(colors.cardBackground.opacity(0.95), in: RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl))
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl)
+                .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
+        )
+    }
+
+    private var backgroundView: some View {
+        LinearGradient(
+            colors: [colors.background, colors.neutral100],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .overlay(
+            Circle()
+                .fill(colors.neutral200.opacity(0.35))
+                .frame(width: 240, height: 240)
+                .offset(x: 140, y: -140)
+        )
+        .ignoresSafeArea()
     }
 
     private func formattedDate(_ date: Date) -> String {

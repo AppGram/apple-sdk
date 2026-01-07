@@ -28,18 +28,22 @@ public struct SupportSubmissionView: View {
 
     public var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: DesignSystem.Spacing.xl) {
-                    subjectSection
-                    emailSection
-                    descriptionSection
-                    prioritySection
-                    attachmentsSection
-                    submitButton
+            ZStack {
+                backgroundView
+
+                ScrollView {
+                    VStack(alignment: .leading, spacing: DesignSystem.Spacing.xl) {
+                        headerCard
+                        subjectSection
+                        emailSection
+                        descriptionSection
+                        prioritySection
+                        attachmentsSection
+                        submitButton
+                    }
+                    .padding(DesignSystem.Spacing.lg)
                 }
-                .padding(DesignSystem.Spacing.lg)
             }
-            .background(colors.background)
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarBackButtonHidden()
             .toolbar {
@@ -83,7 +87,7 @@ public struct SupportSubmissionView: View {
                 .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md))
                 .overlay(
                     RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md)
-                        .strokeBorder(colors.neutral200, lineWidth: DesignSystem.BorderWidth.thin)
+                        .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
                 )
         }
     }
@@ -106,7 +110,7 @@ public struct SupportSubmissionView: View {
                 .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md))
                 .overlay(
                     RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md)
-                        .strokeBorder(colors.neutral200, lineWidth: DesignSystem.BorderWidth.thin)
+                        .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
                 )
         }
     }
@@ -119,7 +123,7 @@ public struct SupportSubmissionView: View {
 
             Text("Provide as much detail as possible")
                 .font(.system(size: DesignSystem.Typography.xs, weight: DesignSystem.Typography.regular))
-                .foregroundColor(colors.text.opacity(DesignSystem.Opacity.muted))
+                .foregroundColor(colors.neutral500)
 
             TextEditor(text: $description)
                 .font(.system(size: DesignSystem.Typography.sm, weight: DesignSystem.Typography.regular))
@@ -131,7 +135,7 @@ public struct SupportSubmissionView: View {
                 .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md))
                 .overlay(
                     RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md)
-                        .strokeBorder(colors.neutral200, lineWidth: DesignSystem.BorderWidth.thin)
+                        .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
                 )
         }
     }
@@ -148,6 +152,7 @@ public struct SupportSubmissionView: View {
                 }
             }
             .pickerStyle(.segmented)
+            .tint(colors.primary)
         }
     }
 
@@ -169,8 +174,12 @@ public struct SupportSubmissionView: View {
                 .foregroundColor(colors.primary)
                 .padding(DesignSystem.Spacing.lg)
                 .frame(maxWidth: .infinity)
-                .background(colors.primary.opacity(DesignSystem.Opacity.muted))
+                .background(colors.cardBackground)
                 .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md))
+                .overlay(
+                    RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.md)
+                        .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
+                )
             }
             .onChange(of: selectedPhotos) { _, newItems in
                 Task {
@@ -237,5 +246,39 @@ public struct SupportSubmissionView: View {
         if success {
             onDismiss()
         }
+    }
+
+    private var backgroundView: some View {
+        LinearGradient(
+            colors: [colors.background, colors.neutral100],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .overlay(
+            Circle()
+                .fill(colors.neutral200.opacity(0.35))
+                .frame(width: 220, height: 220)
+                .offset(x: -140, y: -120)
+        )
+        .ignoresSafeArea()
+    }
+
+    private var headerCard: some View {
+        VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
+            Text("New Support Ticket")
+                .font(.system(size: DesignSystem.Typography.xl, weight: DesignSystem.Typography.semibold, design: .serif))
+                .foregroundColor(colors.text)
+
+            Text("Share the essentials and we’ll follow up quickly.")
+                .font(.system(size: DesignSystem.Typography.base, weight: DesignSystem.Typography.regular))
+                .foregroundColor(colors.neutral500)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(DesignSystem.Spacing.lg)
+        .background(colors.cardBackground.opacity(0.95), in: RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl))
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl)
+                .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
+        )
     }
 }

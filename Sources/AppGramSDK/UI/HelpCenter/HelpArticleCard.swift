@@ -25,12 +25,12 @@ public struct HelpArticleCard: View {
                 if let excerpt = article.excerpt, !excerpt.isEmpty {
                     Text(excerpt)
                         .font(.system(size: DesignSystem.Typography.xs))
-                        .foregroundColor(colors.cardText.opacity(DesignSystem.Opacity.muted))
+                        .foregroundColor(colors.neutral500)
                         .lineLimit(2)
                 } else {
                     Text(contentPreview)
                         .font(.system(size: DesignSystem.Typography.xs))
-                        .foregroundColor(colors.cardText.opacity(DesignSystem.Opacity.muted))
+                        .foregroundColor(colors.neutral500)
                         .lineLimit(2)
                 }
             }
@@ -42,12 +42,18 @@ public struct HelpArticleCard: View {
                 .foregroundColor(colors.cardText.opacity(DesignSystem.Opacity.disabled))
         }
         .padding(DesignSystem.Spacing.lg)
-        .background(colors.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg - 2))
+        .background(colors.cardBackground, in: RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg - 2))
         .overlay(
             RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg - 2)
-                .strokeBorder(colors.neutral200, lineWidth: DesignSystem.BorderWidth.thin)
+                .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
         )
+        .overlay(alignment: .leading) {
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.sm)
+                .fill(colors.primary)
+                .frame(width: 3)
+                .padding(.vertical, DesignSystem.Spacing.md)
+                .offset(x: 2)
+        }
         .layeredShadow()
         .cardHoverEffect()
     }

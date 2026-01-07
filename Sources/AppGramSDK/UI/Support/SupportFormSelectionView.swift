@@ -146,27 +146,49 @@ public struct SupportFormSelectionView: View {
 
     private var formList: some View {
         ScrollView {
-            LazyVStack(spacing: DesignSystem.Spacing.md) {
-                ForEach(forms.filter { $0.isFormActive }) { form in
-                    if embedded {
-                        // Embedded mode - use NavigationLink
-                        NavigationLink(value: form) {
-                            formCard(for: form)
+            VStack(spacing: DesignSystem.Spacing.lg) {
+                headerCard
+
+                LazyVStack(spacing: DesignSystem.Spacing.md) {
+                    ForEach(forms.filter { $0.isFormActive }) { form in
+                        if embedded {
+                            // Embedded mode - use NavigationLink
+                            NavigationLink(value: form) {
+                                formCard(for: form)
+                            }
+                        } else {
+                            // Standalone mode - use button to trigger sheet
+                            Button {
+                                selectedForm = form
+                            } label: {
+                                formCard(for: form)
+                            }
+                            .buttonStyle(PlainButtonStyle())
                         }
-                    } else {
-                        // Standalone mode - use button to trigger sheet
-                        Button {
-                            selectedForm = form
-                        } label: {
-                            formCard(for: form)
-                        }
-                        .buttonStyle(PlainButtonStyle())
                     }
                 }
             }
             .padding(DesignSystem.Spacing.lg)
         }
-        .background(colors.background)
+    }
+
+    private var headerCard: some View {
+        VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
+            Text("Start a support request")
+                .font(.system(size: DesignSystem.Typography.xl, weight: DesignSystem.Typography.semibold, design: .serif))
+                .foregroundColor(colors.text)
+
+            Text("Pick a form and we’ll capture the right details up front.")
+                .font(.system(size: DesignSystem.Typography.base, weight: DesignSystem.Typography.regular))
+                .foregroundColor(colors.neutral500)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(DesignSystem.Spacing.lg)
+        .background(colors.cardBackground.opacity(0.95), in: RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl))
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl)
+                .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
+        )
     }
     
     private func formCard(for form: SupportForm) -> some View {
@@ -237,4 +259,3 @@ public struct SupportFormSelectionView: View {
         isLoading = false
     }
 }
-

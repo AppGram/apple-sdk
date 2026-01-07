@@ -135,7 +135,7 @@ public struct ShortAnswerQuestionView: View {
             .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg))
             .overlay(
                 RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
-                    .strokeBorder(colors.neutral200, lineWidth: DesignSystem.BorderWidth.thin)
+                    .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
             )
     }
 
@@ -149,7 +149,7 @@ public struct ShortAnswerQuestionView: View {
             .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl))
             .overlay(
                 RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl)
-                    .strokeBorder(isFocused ? colors.primary : colors.neutral200.opacity(DesignSystem.Opacity.muted), lineWidth: isFocused ? DesignSystem.BorderWidth.thick : DesignSystem.BorderWidth.thin)
+                    .strokeBorder(isFocused ? colors.primary : colors.border, lineWidth: isFocused ? DesignSystem.BorderWidth.thick : DesignSystem.BorderWidth.thin)
             )
             .focused($isFocused)
             .shadowStyle(isFocused ? DesignSystem.Shadow.sm : DesignSystem.Shadow.xs)
@@ -194,7 +194,7 @@ public struct ParagraphQuestionView: View {
             .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg))
             .overlay(
                 RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
-                    .strokeBorder(colors.neutral200, lineWidth: DesignSystem.BorderWidth.thin)
+                    .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
             )
     }
 
@@ -219,7 +219,7 @@ public struct ParagraphQuestionView: View {
                 .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl))
                 .overlay(
                     RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl)
-                        .strokeBorder(isFocused ? colors.primary : colors.neutral200.opacity(DesignSystem.Opacity.muted), lineWidth: isFocused ? DesignSystem.BorderWidth.thick : DesignSystem.BorderWidth.thin)
+                        .strokeBorder(isFocused ? colors.primary : colors.border, lineWidth: isFocused ? DesignSystem.BorderWidth.thick : DesignSystem.BorderWidth.thin)
                 )
                 .focused($isFocused)
                 .shadowStyle(isFocused ? DesignSystem.Shadow.sm : DesignSystem.Shadow.xs)
@@ -263,7 +263,7 @@ public struct MultipleChoiceQuestionView: View {
                 } label: {
                     HStack {
                         Circle()
-                            .strokeBorder(selectedOption == option.id ? colors.primary : colors.neutral200, lineWidth: DesignSystem.BorderWidth.thick)
+                            .strokeBorder(selectedOption == option.id ? colors.primary : colors.border, lineWidth: DesignSystem.BorderWidth.thick)
                             .background(
                                 Circle()
                                     .fill(selectedOption == option.id ? colors.primary : Color.clear)
@@ -281,7 +281,7 @@ public struct MultipleChoiceQuestionView: View {
                     .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg))
                     .overlay(
                         RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
-                            .strokeBorder(selectedOption == option.id ? colors.primary : colors.neutral200, lineWidth: DesignSystem.BorderWidth.thin)
+                            .strokeBorder(selectedOption == option.id ? colors.primary : colors.border, lineWidth: DesignSystem.BorderWidth.thin)
                     )
                 }
                 .buttonStyle(.plain)
@@ -300,7 +300,7 @@ public struct MultipleChoiceQuestionView: View {
                     HStack(spacing: DesignSystem.Spacing.lg) {
                         ZStack {
                             Circle()
-                                .strokeBorder(selectedOption == option.id ? colors.primary : colors.neutral200.opacity(DesignSystem.Opacity.disabled), lineWidth: DesignSystem.BorderWidth.thick)
+                                .strokeBorder(selectedOption == option.id ? colors.primary : colors.border, lineWidth: DesignSystem.BorderWidth.thick)
                                 .frame(width: 28, height: 28)
 
                             if selectedOption == option.id {
@@ -331,7 +331,7 @@ public struct MultipleChoiceQuestionView: View {
                     .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl))
                     .overlay(
                         RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl)
-                            .strokeBorder(selectedOption == option.id ? colors.primary : colors.neutral200.opacity(DesignSystem.Opacity.muted), lineWidth: selectedOption == option.id ? DesignSystem.BorderWidth.thick : DesignSystem.BorderWidth.thin)
+                            .strokeBorder(selectedOption == option.id ? colors.primary : colors.border, lineWidth: selectedOption == option.id ? DesignSystem.BorderWidth.thick : DesignSystem.BorderWidth.thin)
                     )
                     .shadowStyle(selectedOption == option.id ? DesignSystem.Shadow.sm : DesignSystem.Shadow.xs)
                 }
@@ -380,7 +380,7 @@ public struct CheckboxesQuestionView: View {
                 } label: {
                     HStack {
                         RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xs)
-                            .strokeBorder(selectedOptions.contains(option.id) ? colors.primary : colors.neutral200, lineWidth: DesignSystem.BorderWidth.thick)
+                            .strokeBorder(selectedOptions.contains(option.id) ? colors.primary : colors.border, lineWidth: DesignSystem.BorderWidth.thick)
                             .background(
                                 RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xs)
                                     .fill(selectedOptions.contains(option.id) ? colors.primary : Color.clear)
@@ -403,7 +403,7 @@ public struct CheckboxesQuestionView: View {
                     .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg))
                     .overlay(
                         RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
-                            .strokeBorder(selectedOptions.contains(option.id) ? colors.primary : colors.neutral200, lineWidth: DesignSystem.BorderWidth.thin)
+                            .strokeBorder(selectedOptions.contains(option.id) ? colors.primary : colors.border, lineWidth: DesignSystem.BorderWidth.thin)
                     )
                 }
                 .buttonStyle(.plain)
@@ -426,7 +426,7 @@ public struct CheckboxesQuestionView: View {
                     HStack(spacing: DesignSystem.Spacing.lg) {
                         ZStack {
                             RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.sm)
-                                .strokeBorder(selectedOptions.contains(option.id) ? colors.primary : colors.neutral200.opacity(DesignSystem.Opacity.disabled), lineWidth: DesignSystem.BorderWidth.thick)
+                                .strokeBorder(selectedOptions.contains(option.id) ? colors.primary : colors.border, lineWidth: DesignSystem.BorderWidth.thick)
                                 .frame(width: 28, height: 28)
 
                             if selectedOptions.contains(option.id) {
@@ -454,7 +454,7 @@ public struct CheckboxesQuestionView: View {
                     .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl))
                     .overlay(
                         RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl)
-                            .strokeBorder(selectedOptions.contains(option.id) ? colors.primary : colors.neutral200.opacity(DesignSystem.Opacity.muted), lineWidth: selectedOptions.contains(option.id) ? DesignSystem.BorderWidth.thick : DesignSystem.BorderWidth.thin)
+                            .strokeBorder(selectedOptions.contains(option.id) ? colors.primary : colors.border, lineWidth: selectedOptions.contains(option.id) ? DesignSystem.BorderWidth.thick : DesignSystem.BorderWidth.thin)
                     )
                     .shadowStyle(selectedOptions.contains(option.id) ? DesignSystem.Shadow.sm : DesignSystem.Shadow.xs)
                 }
@@ -501,7 +501,7 @@ public struct RatingQuestionView: View {
                 } label: {
                     Image(systemName: value <= (rating ?? 0) ? "star.fill" : "star")
                         .font(.title)
-                        .foregroundColor(value <= (rating ?? 0) ? colors.warning : colors.neutral200)
+                        .foregroundColor(value <= (rating ?? 0) ? colors.warning : colors.border)
                 }
                 .buttonStyle(.plain)
             }
@@ -528,7 +528,7 @@ public struct RatingQuestionView: View {
                         }
                         .overlay(
                             Circle()
-                                .strokeBorder(value <= (rating ?? 0) ? colors.primary : colors.neutral200.opacity(DesignSystem.Opacity.disabled), lineWidth: value <= (rating ?? 0) ? DesignSystem.BorderWidth.thick : DesignSystem.BorderWidth.thin)
+                                .strokeBorder(value <= (rating ?? 0) ? colors.primary : colors.border, lineWidth: value <= (rating ?? 0) ? DesignSystem.BorderWidth.thick : DesignSystem.BorderWidth.thin)
                         )
                         .shadowStyle(value <= (rating ?? 0) ? DesignSystem.Shadow.sm : DesignSystem.Shadow.xs)
                         .scaleEffect(value <= (rating ?? 0) ? 1.05 : 1.0)

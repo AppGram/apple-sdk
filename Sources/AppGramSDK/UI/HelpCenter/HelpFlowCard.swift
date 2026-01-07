@@ -53,15 +53,25 @@ internal struct HelpFlowCard: View {
                     if let description = flow.description {
                         Text(description)
                             .font(.system(size: DesignSystem.Typography.sm))
-                            .foregroundColor(colors.text.opacity(DesignSystem.Opacity.muted))
+                            .foregroundColor(colors.neutral500)
                             .lineLimit(2)
                     }
                 }
             }
         }
         .padding(DesignSystem.Spacing.lg)
-        .background(colors.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg))
+        .background(colors.cardBackground, in: RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg))
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
+                .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
+        )
+        .overlay(alignment: .leading) {
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.sm)
+                .fill(iconColor)
+                .frame(width: 4)
+                .padding(.vertical, DesignSystem.Spacing.md)
+                .offset(x: 2)
+        }
         .layeredShadow()
     }
 
@@ -83,7 +93,7 @@ internal struct HelpFlowCard: View {
         }
         .padding(.horizontal, DesignSystem.Spacing.sm)
         .padding(.vertical, DesignSystem.Spacing.xs)
-        .background(colors.primary.opacity(DesignSystem.Opacity.disabled / 4))
+        .background(colors.primary.opacity(0.12))
         .foregroundColor(colors.primary)
         .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.sm))
     }

@@ -89,12 +89,16 @@ public struct SurveyView: View {
     // MARK: - Normal Style View
     private var normalStyleView: some View {
         NavigationStack {
-            content
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button("Close") {
-                            dismiss()
+            ZStack {
+                backgroundView
+                content
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Close") {
+                        dismiss()
                         }
                         .font(.system(size: DesignSystem.Typography.base, weight: DesignSystem.Typography.semibold))
                     }
@@ -105,8 +109,7 @@ public struct SurveyView: View {
     // MARK: - Typeform Style View
     private var typeformStyleView: some View {
         ZStack {
-            colors.background
-                .ignoresSafeArea()
+            backgroundView
 
             VStack(spacing: 0) {
                 // Minimal top bar with progress
@@ -212,29 +215,43 @@ public struct SurveyView: View {
     private var content: some View {
         if viewModel.isLoading {
             LoadingView()
-                .transition(.opacity)
         } else if let error = viewModel.error {
             ErrorView(error: error) {
                 await viewModel.loadSurvey(slug: slug)
             }
-            .transition(.opacity)
         } else if viewModel.isComplete {
             completionView
-                .transition(.opacity)
+        } else if style == .normal {
+            normalWelcomeAndQuestion
         } else if showWelcome && viewModel.survey != nil {
             welcomeView
-                .transition(.opacity)
         } else if let currentNode = viewModel.currentNode {
             questionView(for: currentNode)
-                .transition(.opacity)
         } else {
             EmptyStateView(
                 icon: "list.clipboard",
                 title: "Survey Not Found",
                 message: "This survey is no longer available."
             )
-            .transition(.opacity)
         }
+    }
+
+    private var normalWelcomeAndQuestion: some View {
+        let shouldShowWelcome = showWelcome || viewModel.currentNode == nil
+        return ZStack {
+            if viewModel.survey != nil {
+                welcomeView
+                    .opacity(shouldShowWelcome ? 1 : 0)
+                    .allowsHitTesting(shouldShowWelcome)
+            }
+
+            if let currentNode = viewModel.currentNode {
+                questionView(for: currentNode)
+                    .opacity(shouldShowWelcome ? 0 : 1)
+                    .allowsHitTesting(!shouldShowWelcome)
+            }
+        }
+        .animation(nil, value: shouldShowWelcome)
     }
 
     private func questionView(for node: SurveyNode) -> some View {
@@ -256,34 +273,41 @@ public struct SurveyView: View {
                     .frame(height: DesignSystem.Spacing.xxxl + 12) // Fixed height for progress section
 
                 VStack(alignment: .leading, spacing: DesignSystem.Spacing.lg) {
-                    // Question text with fixed minimum height
-                    HStack(alignment: .top) {
-                        Text(node.question)
-                            .font(.system(size: DesignSystem.Typography.lg, weight: DesignSystem.Typography.semibold))
-                            .foregroundColor(colors.text)
-                            .fixedSize(horizontal: false, vertical: true)
+                    VStack(alignment: .leading, spacing: DesignSystem.Spacing.lg) {
+                        // Question text with fixed minimum height
+                        HStack(alignment: .top) {
+                            Text(node.question)
+                                .font(.system(size: DesignSystem.Typography.lg, weight: DesignSystem.Typography.semibold))
+                                .foregroundColor(colors.text)
+                                .fixedSize(horizontal: false, vertical: true)
 
-                        if node.isRequired {
-                            Text("*")
-                                .foregroundColor(colors.error)
-                        } else {
-                            // Placeholder to maintain consistent spacing
-                            Text(" ")
-                                .opacity(0)
+                            if node.isRequired {
+                                Text("*")
+                                    .foregroundColor(colors.error)
+                            } else {
+                                // Placeholder to maintain consistent spacing
+                                Text(" ")
+                                    .opacity(0)
+                            }
                         }
+                        .frame(minHeight: DesignSystem.Spacing.xxl + 8) // Minimum height for consistency
+
+                        answerInput(for: node, style: .normal)
+                            .frame(minHeight: DesignSystem.Spacing.xxl + 16) // Minimum height for answer input
                     }
-                    .frame(minHeight: DesignSystem.Spacing.xxl + 8) // Minimum height for consistency
 
-                    answerInput(for: node, style: .normal)
-                        .frame(minHeight: DesignSystem.Spacing.xxl + 16) // Minimum height for answer input
+                    navigationButtons(for: node, style: .normal)
+                        .frame(height: DesignSystem.Spacing.xxl + 16) // Fixed height for navigation buttons
                 }
-
-                navigationButtons(for: node, style: .normal)
-                    .frame(height: DesignSystem.Spacing.xxl + 16) // Fixed height for navigation buttons
+                .padding(DesignSystem.Spacing.xl)
+                .background(colors.cardBackground.opacity(0.95), in: RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl))
+                .overlay(
+                    RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl)
+                        .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
+                )
             }
             .padding(DesignSystem.Spacing.xl) // Consistent padding
         }
-        .background(colors.background)
     }
     
     // MARK: - Typeform Style Question View
@@ -399,7 +423,7 @@ public struct SurveyView: View {
             HStack {
                 Text("Question \(viewModel.currentQuestionNumber) of \(viewModel.totalQuestions)")
                     .font(.system(size: DesignSystem.Typography.xs, weight: DesignSystem.Typography.regular))
-                    .foregroundColor(colors.text.opacity(DesignSystem.Opacity.muted))
+                    .foregroundColor(colors.neutral500)
 
                 Spacer()
 
@@ -636,60 +660,69 @@ public struct SurveyView: View {
     }
     
     private var normalCompletionView: some View {
-        VStack(spacing: DesignSystem.Spacing.xl) {
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: DesignSystem.Typography.xxxl * 2))
-                .foregroundColor(colors.success)
-                .symbolEffect(.bounce, value: showCompletionAnimation)
-                .scaleEffect(showCompletionAnimation ? 1.0 : 0.5)
-                .opacity(showCompletionAnimation ? 1.0 : 0.0)
-                .animation(.spring(response: 0.6, dampingFraction: 0.6).delay(0.1), value: showCompletionAnimation)
+        ZStack {
+            backgroundView
 
-            Text("Thank You!")
-                .font(.system(size: DesignSystem.Typography.xxl, weight: DesignSystem.Typography.bold))
-                .foregroundColor(colors.text)
-                .opacity(showCompletionAnimation ? 1.0 : 0.0)
-                .offset(y: showCompletionAnimation ? 0 : 20)
-                .animation(.spring(response: 0.6, dampingFraction: 0.7).delay(0.3), value: showCompletionAnimation)
+            VStack(spacing: DesignSystem.Spacing.xl) {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: DesignSystem.Typography.xxxl * 2))
+                    .foregroundColor(colors.success)
+                    .symbolEffect(.bounce, value: showCompletionAnimation)
+                    .scaleEffect(showCompletionAnimation ? 1.0 : 0.5)
+                    .opacity(showCompletionAnimation ? 1.0 : 0.0)
+                    .animation(.spring(response: 0.6, dampingFraction: 0.6).delay(0.1), value: showCompletionAnimation)
 
-            if let message = viewModel.resultMessage {
-                Text(message)
-                    .font(.system(size: DesignSystem.Typography.base, weight: DesignSystem.Typography.regular))
-                    .foregroundColor(colors.text.opacity(DesignSystem.Opacity.subtle))
-                    .multilineTextAlignment(.center)
+                Text("Thank You!")
+                    .font(.system(size: DesignSystem.Typography.xxl, weight: DesignSystem.Typography.bold))
+                    .foregroundColor(colors.text)
                     .opacity(showCompletionAnimation ? 1.0 : 0.0)
                     .offset(y: showCompletionAnimation ? 0 : 20)
-                    .animation(.spring(response: 0.6, dampingFraction: 0.7).delay(0.5), value: showCompletionAnimation)
-            } else {
-                Text("Your response has been submitted successfully.")
-                    .font(.system(size: DesignSystem.Typography.base, weight: DesignSystem.Typography.regular))
-                    .foregroundColor(colors.text.opacity(DesignSystem.Opacity.subtle))
-                    .multilineTextAlignment(.center)
-                    .opacity(showCompletionAnimation ? 1.0 : 0.0)
-                    .offset(y: showCompletionAnimation ? 0 : 20)
-                    .animation(.spring(response: 0.6, dampingFraction: 0.7).delay(0.5), value: showCompletionAnimation)
-            }
+                    .animation(.spring(response: 0.6, dampingFraction: 0.7).delay(0.3), value: showCompletionAnimation)
 
-            Button {
-                dismiss()
-            } label: {
-                Text("Done")
-                    .font(.system(size: DesignSystem.Typography.base, weight: DesignSystem.Typography.semibold))
-                    .foregroundColor(.white)
-                    .padding(DesignSystem.Spacing.lg)
-                    .frame(maxWidth: .infinity)
-                    .background(colors.primary)
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg))
-                    .shadowStyle(DesignSystem.Shadow.sm)
+                if let message = viewModel.resultMessage {
+                    Text(message)
+                        .font(.system(size: DesignSystem.Typography.base, weight: DesignSystem.Typography.regular))
+                        .foregroundColor(colors.neutral500)
+                        .multilineTextAlignment(.center)
+                        .opacity(showCompletionAnimation ? 1.0 : 0.0)
+                        .offset(y: showCompletionAnimation ? 0 : 20)
+                        .animation(.spring(response: 0.6, dampingFraction: 0.7).delay(0.5), value: showCompletionAnimation)
+                } else {
+                    Text("Your response has been submitted successfully.")
+                        .font(.system(size: DesignSystem.Typography.base, weight: DesignSystem.Typography.regular))
+                        .foregroundColor(colors.neutral500)
+                        .multilineTextAlignment(.center)
+                        .opacity(showCompletionAnimation ? 1.0 : 0.0)
+                        .offset(y: showCompletionAnimation ? 0 : 20)
+                        .animation(.spring(response: 0.6, dampingFraction: 0.7).delay(0.5), value: showCompletionAnimation)
+                }
+
+                Button {
+                    dismiss()
+                } label: {
+                    Text("Done")
+                        .font(.system(size: DesignSystem.Typography.base, weight: DesignSystem.Typography.semibold))
+                        .foregroundColor(colors.cardBackground)
+                        .padding(DesignSystem.Spacing.lg)
+                        .frame(maxWidth: .infinity)
+                        .background(colors.primary)
+                        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg))
+                        .shadowStyle(DesignSystem.Shadow.sm)
+                }
+                .opacity(showCompletionAnimation ? 1.0 : 0.0)
+                .scaleEffect(showCompletionAnimation ? 1.0 : 0.9)
+                .animation(.spring(response: 0.6, dampingFraction: 0.7).delay(0.7), value: showCompletionAnimation)
+                .padding(.top, DesignSystem.Spacing.lg)
             }
-            .opacity(showCompletionAnimation ? 1.0 : 0.0)
-            .scaleEffect(showCompletionAnimation ? 1.0 : 0.9)
-            .animation(.spring(response: 0.6, dampingFraction: 0.7).delay(0.7), value: showCompletionAnimation)
-            .padding(.top, DesignSystem.Spacing.lg)
+            .padding(DesignSystem.Spacing.lg)
+            .frame(maxWidth: .infinity)
+            .background(colors.cardBackground.opacity(0.95), in: RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl))
+            .overlay(
+                RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl)
+                    .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
+            )
+            .padding(DesignSystem.Spacing.lg)
         }
-        .padding(DesignSystem.Spacing.lg)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(colors.background)
     }
     
     private var typeformCompletionView: some View {
@@ -772,7 +805,7 @@ public struct SurveyView: View {
             .padding(.bottom, DesignSystem.Spacing.xxxl + 20)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(colors.background)
+        .background(backgroundView)
     }
 
     // MARK: - Welcome View
@@ -822,7 +855,7 @@ public struct SurveyView: View {
                         if let description = survey.description {
                             Text(description)
                                 .font(.system(size: DesignSystem.Typography.base, weight: DesignSystem.Typography.regular))
-                                .foregroundColor(colors.text.opacity(DesignSystem.Opacity.subtle))
+                                .foregroundColor(colors.neutral500)
                                 .multilineTextAlignment(.center)
                                 .lineSpacing(DesignSystem.Spacing.xs)
                         }
@@ -844,13 +877,15 @@ public struct SurveyView: View {
                         description: "Your responses are private"
                     )
                 }
-                .padding(.horizontal, DesignSystem.Spacing.xl)
+                    .padding(.horizontal, DesignSystem.Spacing.xl)
 
                 Spacer()
 
                 // Start button
                 Button {
-                    withAnimation(.easeInOut(duration: 0.25)) {
+                    var transaction = Transaction()
+                    transaction.disablesAnimations = true
+                    withTransaction(transaction) {
                         showWelcome = false
                     }
                 } label: {
@@ -871,7 +906,7 @@ public struct SurveyView: View {
                 .padding(.bottom, DesignSystem.Spacing.xxl)
             }
         }
-        .background(colors.background)
+        .background(backgroundView)
     }
 
     private var typeformWelcomeView: some View {
@@ -914,7 +949,7 @@ public struct SurveyView: View {
                         if let description = survey.description {
                             Text(description)
                                 .font(.system(size: DesignSystem.Typography.lg, weight: DesignSystem.Typography.regular))
-                                .foregroundColor(colors.text.opacity(DesignSystem.Opacity.subtle))
+                                .foregroundColor(colors.neutral500)
                                 .multilineTextAlignment(.center)
                                 .lineSpacing(DesignSystem.Spacing.sm)
                         }
@@ -931,7 +966,7 @@ public struct SurveyView: View {
 
                         Text("Questions")
                             .font(.system(size: DesignSystem.Typography.sm, weight: DesignSystem.Typography.medium))
-                            .foregroundColor(colors.text.opacity(DesignSystem.Opacity.muted))
+                            .foregroundColor(colors.neutral500)
                     }
 
                     Rectangle()
@@ -945,13 +980,16 @@ public struct SurveyView: View {
 
                         Text("Anonymous")
                             .font(.system(size: DesignSystem.Typography.sm, weight: DesignSystem.Typography.medium))
-                            .foregroundColor(colors.text.opacity(DesignSystem.Opacity.muted))
+                            .foregroundColor(colors.neutral500)
                     }
                 }
                 .padding(.horizontal, DesignSystem.Spacing.xxxl)
                 .padding(.vertical, DesignSystem.Spacing.xl)
-                .background(colors.cardBackground)
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl))
+                .background(colors.cardBackground, in: RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl))
+                .overlay(
+                    RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl)
+                        .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
+                )
                 .shadowStyle(DesignSystem.Shadow.sm)
             }
 
@@ -986,7 +1024,7 @@ public struct SurveyView: View {
             .padding(.bottom, DesignSystem.Spacing.xxxl + 20)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(colors.background)
+        .background(backgroundView)
     }
 
     private func infoCard(icon: String, title: String, description: String) -> some View {
@@ -1008,17 +1046,31 @@ public struct SurveyView: View {
 
                 Text(description)
                     .font(.system(size: DesignSystem.Typography.sm, weight: DesignSystem.Typography.regular))
-                    .foregroundColor(colors.text.opacity(DesignSystem.Opacity.muted))
+                    .foregroundColor(colors.neutral500)
             }
 
             Spacer()
         }
         .padding(DesignSystem.Spacing.lg)
-        .background(colors.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg))
+        .background(colors.cardBackground, in: RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg))
         .overlay(
             RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
-                .strokeBorder(colors.border.opacity(0.5), lineWidth: DesignSystem.BorderWidth.thin)
+                .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
         )
+    }
+
+    private var backgroundView: some View {
+        LinearGradient(
+            colors: [colors.background, colors.neutral100],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .overlay(
+            Circle()
+                .fill(colors.neutral200.opacity(0.35))
+                .frame(width: 240, height: 240)
+                .offset(x: 140, y: -140)
+        )
+        .ignoresSafeArea()
     }
 }

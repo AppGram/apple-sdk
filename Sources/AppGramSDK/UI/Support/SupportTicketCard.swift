@@ -29,7 +29,7 @@ public struct SupportTicketCard: View {
 
             Text(ticket.description)
                 .font(.system(size: DesignSystem.Typography.sm, weight: DesignSystem.Typography.regular))
-                .foregroundColor(colors.cardText.opacity(DesignSystem.Opacity.muted))
+                .foregroundColor(colors.neutral500)
                 .lineLimit(2)
 
             HStack {
@@ -39,22 +39,31 @@ public struct SupportTicketCard: View {
                     Text(ticket.userEmail)
                         .font(.system(size: DesignSystem.Typography.xs, weight: DesignSystem.Typography.regular))
                 }
-                .foregroundColor(colors.cardText.opacity(DesignSystem.Opacity.subtle))
+                .foregroundColor(colors.neutral500)
 
                 Spacer()
 
                 Text(formattedDate)
                     .font(.system(size: DesignSystem.Typography.xs, weight: DesignSystem.Typography.regular))
-                    .foregroundColor(colors.cardText.opacity(DesignSystem.Opacity.subtle))
+                    .foregroundColor(colors.neutral500)
             }
         }
         .padding(DesignSystem.Spacing.lg)
-        .background(colors.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg))
+        .background(
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
+                .fill(colors.cardBackground)
+        )
         .overlay(
             RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
-                .strokeBorder(colors.neutral200, lineWidth: DesignSystem.BorderWidth.thin)
+                .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
         )
+        .overlay(alignment: .leading) {
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.sm)
+                .fill(colors.primary)
+                .frame(width: 4)
+                .padding(.vertical, DesignSystem.Spacing.md)
+                .offset(x: 2)
+        }
         .layeredShadow()
     }
 

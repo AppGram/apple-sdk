@@ -16,18 +16,21 @@ public struct SupportTicketDetailView: View {
     }
 
     public var body: some View {
-        VStack(spacing: 0) {
-            ScrollView {
-                VStack(alignment: .leading, spacing: DesignSystem.Spacing.lg) {
-                    headerSection
-                    messagesSection
-                }
-                .padding(DesignSystem.Spacing.lg)
-            }
+        ZStack {
+            backgroundView
 
-            messageInputSection
+            VStack(spacing: 0) {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: DesignSystem.Spacing.lg) {
+                        headerSection
+                        messagesSection
+                    }
+                    .padding(DesignSystem.Spacing.lg)
+                }
+
+                messageInputSection
+            }
         }
-        .background(colors.background)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
@@ -56,6 +59,21 @@ public struct SupportTicketDetailView: View {
         }
     }
 
+    private var backgroundView: some View {
+        LinearGradient(
+            colors: [colors.background, colors.neutral100],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .overlay(
+            Circle()
+                .fill(colors.neutral200.opacity(0.35))
+                .frame(width: 220, height: 220)
+                .offset(x: 120, y: -140)
+        )
+        .ignoresSafeArea()
+    }
+
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: DesignSystem.Spacing.md) {
             HStack {
@@ -75,18 +93,21 @@ public struct SupportTicketDetailView: View {
             HStack {
                 Text(viewModel.ticket.userEmail)
                     .font(.system(size: DesignSystem.Typography.xs, weight: DesignSystem.Typography.regular))
-                    .foregroundColor(colors.text.opacity(DesignSystem.Opacity.muted))
+                    .foregroundColor(colors.neutral500)
 
                 Spacer()
 
                 Text(formattedDate)
                     .font(.system(size: DesignSystem.Typography.xs, weight: DesignSystem.Typography.regular))
-                    .foregroundColor(colors.text.opacity(DesignSystem.Opacity.muted))
+                    .foregroundColor(colors.neutral500)
             }
         }
         .padding(DesignSystem.Spacing.lg)
-        .background(colors.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg))
+        .background(colors.cardBackground, in: RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg))
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
+                .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
+        )
         .layeredShadow()
     }
 
@@ -116,6 +137,12 @@ public struct SupportTicketDetailView: View {
                 }
             }
         }
+        .padding(DesignSystem.Spacing.lg)
+        .background(colors.cardBackground, in: RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg))
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
+                .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
+        )
     }
 
     private var messageInputSection: some View {
@@ -128,8 +155,11 @@ public struct SupportTicketDetailView: View {
                     .foregroundColor(colors.text)
                     .textFieldStyle(.plain)
                     .padding(DesignSystem.Spacing.md)
-                    .background(colors.cardBackground)
-                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xxl))
+                    .background(colors.cardBackground, in: RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xxl))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xxl)
+                            .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
+                    )
 
                 Button {
                     Task { await viewModel.addMessage() }

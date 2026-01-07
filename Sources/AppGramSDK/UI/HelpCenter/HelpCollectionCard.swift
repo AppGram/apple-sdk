@@ -41,22 +41,29 @@ public struct HelpCollectionCard: View {
             if let description = collection.description {
                 Text(description)
                     .font(.system(size: DesignSystem.Typography.sm))
-                    .foregroundColor(colors.cardText.opacity(DesignSystem.Opacity.muted))
+                    .foregroundColor(colors.neutral500)
                     .lineLimit(2)
             }
 
             if let articles = collection.articles {
                 Text("\(articles.count) article\(articles.count == 1 ? "" : "s")")
                     .font(.system(size: DesignSystem.Typography.xs))
-                    .foregroundColor(colors.cardText.opacity(DesignSystem.Opacity.disabled))
+                    .foregroundColor(colors.neutral500)
             }
         }
         .padding(DesignSystem.Spacing.lg)
-        .background(colors.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg))
+        .background(colors.cardBackground, in: RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg))
         .overlay(
             RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.lg)
-                .strokeBorder(colors.neutral200, lineWidth: DesignSystem.BorderWidth.thin)
+                .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
         )
+        .overlay(alignment: .leading) {
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.sm)
+                .fill(colors.primary)
+                .frame(width: 4)
+                .padding(.vertical, DesignSystem.Spacing.md)
+                .offset(x: 2)
+        }
+        .layeredShadow()
     }
 }
