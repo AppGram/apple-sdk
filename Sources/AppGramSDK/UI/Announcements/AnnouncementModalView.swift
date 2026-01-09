@@ -21,6 +21,10 @@ public struct AnnouncementModalView: View {
         theme.resolvedColors(for: colorScheme)
     }
 
+    private var isSheetStyle: Bool {
+        cardConfiguration.presentationStyle == .sheet
+    }
+
     public init(
         announcements: [Announcement],
         cardConfiguration: AnnouncementCardConfiguration = .default,
@@ -34,32 +38,36 @@ public struct AnnouncementModalView: View {
     }
 
     public var body: some View {
-        ZStack {
+        ZStack(alignment: .bottom) {
             backgroundView
                 .onTapGesture {
-                    dismissModal()
+                    if !isSheetStyle {
+                        dismissModal()
+                    }
                 }
 
-            VStack(spacing: 0) {
-                Spacer()
+            VStack(spacing: DesignSystem.Spacing.lg) {
+                Capsule()
+                    .fill((isSheetStyle ? colors.neutral700 : colors.border).opacity(0.6))
+                    .frame(width: 44, height: 5)
+                    .padding(.top, DesignSystem.Spacing.md)
 
                 HStack {
                     Spacer()
                     Button(action: dismissModal) {
                         Image(systemName: "xmark")
                             .font(.system(size: DesignSystem.Typography.base, weight: DesignSystem.Typography.semibold))
-                            .foregroundColor(colors.text.opacity(DesignSystem.Opacity.subtle))
+                            .foregroundColor((isSheetStyle ? Color.white : colors.text).opacity(DesignSystem.Opacity.subtle))
                             .frame(width: DesignSystem.Spacing.xxxl, height: DesignSystem.Spacing.xxxl)
-                            .background(colors.cardBackground.opacity(0.95))
+                            .background((isSheetStyle ? colors.neutral800 : colors.neutral100).opacity(0.9))
                             .clipShape(Circle())
                             .overlay(
                                 Circle()
-                                    .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
+                                    .strokeBorder(isSheetStyle ? colors.neutral700 : colors.border, lineWidth: DesignSystem.BorderWidth.thin)
                             )
                     }
-                    .padding(.top, DesignSystem.Spacing.lg)
-                    .padding(.trailing, DesignSystem.Spacing.xl)
                 }
+                .padding(.horizontal, DesignSystem.Spacing.xl)
 
                 if announcements.count == 1 {
                     singleAnnouncementView
@@ -67,11 +75,14 @@ public struct AnnouncementModalView: View {
                     pagedAnnouncementsView
                 }
             }
+            .frame(maxWidth: .infinity)
+            .padding(.bottom, DesignSystem.Spacing.lg)
+            .background(sheetBackground)
+            .offset(y: isPresented ? 0 : 24)
         }
         .opacity(isPresented ? 1 : 0)
-        .scaleEffect(isPresented ? 1 : 0.96)
         .onAppear {
-            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.86)) {
                 isPresented = true
             }
         }
@@ -79,42 +90,26 @@ public struct AnnouncementModalView: View {
     }
 
     private var backgroundView: some View {
-        LinearGradient(
-            colors: [colors.background, colors.neutral100],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-        .overlay(
-            Circle()
-                .fill(colors.neutral200.opacity(0.3))
-                .frame(width: 320, height: 320)
-                .offset(x: -180, y: -140)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 160)
-                .fill(colors.neutral200.opacity(0.2))
-                .frame(width: 300, height: 180)
-                .rotationEffect(.degrees(-10))
-                .offset(x: 140, y: 120)
-        )
-        .overlay(Color.black.opacity(colorScheme == .dark ? 0.45 : 0.2))
-        .ignoresSafeArea()
+        Color.black.opacity(colorScheme == .dark ? 0.8 : 0.5)
+            .ignoresSafeArea()
     }
 
     private var singleAnnouncementView: some View {
-        AnnouncementCardView(
-            announcement: announcements[0],
-            configuration: cardConfiguration,
-            onTryIt: {
-                onAction(announcements[0])
-                dismissModal()
-            },
-            onNotNow: {
-                dismissModal()
-            }
-        )
-        .padding(cardConfiguration.modalPadding)
-        .background(sheetBackground)
+        ScrollView {
+            AnnouncementCardView(
+                announcement: announcements[0],
+                configuration: cardConfiguration,
+                onTryIt: {
+                    onAction(announcements[0])
+                    dismissModal()
+                },
+                onNotNow: {
+                    dismissModal()
+                }
+            )
+            .padding(cardConfiguration.modalPadding)
+        }
+        .frame(maxHeight: UIScreen.main.bounds.height * (isSheetStyle ? 0.8 : 0.66))
     }
 
     private var pagedAnnouncementsView: some View {
@@ -139,7 +134,7 @@ public struct AnnouncementModalView: View {
                 }
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
-            .frame(maxHeight: UIScreen.main.bounds.height * 0.72)
+            .frame(maxHeight: UIScreen.main.bounds.height * (isSheetStyle ? 0.8 : 0.66))
 
             if announcements.count > 1 && cardConfiguration.pageIndicatorConfiguration.isVisible {
                 if let customView = cardConfiguration.pageIndicatorConfiguration.customView {
@@ -163,21 +158,27 @@ public struct AnnouncementModalView: View {
                 }
             }
         }
-        .background(sheetBackground)
     }
 
     private var sheetBackground: some View {
-        RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl, style: .continuous)
-            .fill(colors.cardBackground)
-            .overlay(
-                RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl, style: .continuous)
-                    .strokeBorder(colors.border, lineWidth: DesignSystem.BorderWidth.thin)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.xl, style: .continuous))
-            .shadow(color: colors.text.opacity(0.1), radius: 24, x: 0, y: -8)
-            .ignoresSafeArea(edges: .bottom)
-            .padding(.horizontal, DesignSystem.Spacing.lg)
-            .padding(.bottom, DesignSystem.Spacing.lg)
+        Group {
+            if isSheetStyle {
+                Color.black
+                    .cornerRadius(32, corners: [.topLeft, .topRight])
+                    .shadow(color: Color.black.opacity(0.5), radius: 30, x: 0, y: -15)
+            } else {
+                colors.cardBackground
+                    .overlay(
+                        Rectangle()
+                            .fill(colors.border.opacity(0.6))
+                            .frame(height: DesignSystem.BorderWidth.thin),
+                        alignment: .top
+                    )
+                    .cornerRadius(DesignSystem.CornerRadius.xl, corners: [.topLeft, .topRight])
+                    .shadow(color: colors.text.opacity(0.12), radius: 20, x: 0, y: -6)
+            }
+        }
+        .ignoresSafeArea(edges: .bottom)
     }
 
     private func dismissModal() {

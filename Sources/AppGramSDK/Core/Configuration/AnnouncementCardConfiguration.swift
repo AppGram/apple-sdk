@@ -36,6 +36,14 @@ import SwiftUI
 /// )
 /// ```
 public struct AnnouncementCardConfiguration {
+    /// Visual presentation style for the announcement content.
+    public enum PresentationStyle {
+        /// Renders content inside a card with background, border, and shadow.
+        case card
+        /// Renders content flush inside a container like a bottom sheet.
+        case sheet
+    }
+
     /// Background color for the announcement card.
     public let backgroundColor: Color?
     
@@ -62,6 +70,9 @@ public struct AnnouncementCardConfiguration {
     
     /// Padding around the card within the modal.
     public let modalPadding: CGFloat
+
+    /// Presentation style for the announcement content.
+    public let presentationStyle: PresentationStyle
     
     /// Configuration for page indicators when multiple announcements are shown.
     public let pageIndicatorConfiguration: PageIndicatorConfiguration
@@ -79,6 +90,7 @@ public struct AnnouncementCardConfiguration {
     ///   - cornerRadius: Corner radius for the card. Defaults to 24.
     ///   - modalPadding: Padding around the card within the modal. Defaults to 20.
     ///   - pageIndicatorConfiguration: Configuration for page indicators. Defaults to `.default`.
+    ///   - presentationStyle: Presentation style for the content. Defaults to `.card`.
     public init(
         backgroundColor: Color? = nil,
         primaryButton: ButtonConfiguration? = ButtonConfiguration(title: "Try it"),
@@ -89,7 +101,8 @@ public struct AnnouncementCardConfiguration {
         descriptionFontSize: CGFloat = 16,
         cornerRadius: CGFloat = 24,
         modalPadding: CGFloat = 20,
-        pageIndicatorConfiguration: PageIndicatorConfiguration = .default
+        pageIndicatorConfiguration: PageIndicatorConfiguration = .default,
+        presentationStyle: PresentationStyle = .card
     ) {
         self.backgroundColor = backgroundColor
         self.primaryButton = primaryButton
@@ -101,6 +114,7 @@ public struct AnnouncementCardConfiguration {
         self.cornerRadius = cornerRadius
         self.modalPadding = modalPadding
         self.pageIndicatorConfiguration = pageIndicatorConfiguration
+        self.presentationStyle = presentationStyle
     }
     
     /// Default configuration matching ChatGPT agent mode style.
@@ -111,4 +125,7 @@ public struct AnnouncementCardConfiguration {
         primaryButton: nil,
         secondaryButton: nil
     )
+
+    /// Configuration for bottom-sheet style presentation (no card chrome).
+    public static let sheet = AnnouncementCardConfiguration(presentationStyle: .sheet)
 }
