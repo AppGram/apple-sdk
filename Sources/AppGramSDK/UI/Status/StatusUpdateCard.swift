@@ -85,7 +85,7 @@ struct StatusUpdateCard: View {
                                 }
                         }
 
-                        if !update.affectedServices.isEmpty {
+                        if let affectedServices = update.affectedServices, !affectedServices.isEmpty {
                             VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
                                 HStack(spacing: DesignSystem.Spacing.xs) {
                                     Image(systemName: "exclamationmark.triangle.fill")
@@ -98,7 +98,7 @@ struct StatusUpdateCard: View {
                                 }
 
                                 FlowLayout(spacing: DesignSystem.Spacing.xs) {
-                                    ForEach(update.affectedServices, id: \.self) { service in
+                                    ForEach(affectedServices, id: \.self) { service in
                                         Text(service)
                                             .font(.system(size: DesignSystem.Typography.xs, weight: .medium))
                                             .padding(.horizontal, DesignSystem.Spacing.sm + 2)

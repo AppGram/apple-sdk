@@ -89,6 +89,16 @@ groups:
       - "RoadmapColumn"
       - "RoadmapLayout"
 
+  # Blog Models
+  Blog:
+    description: "Blog posts, categories, and content management"
+    patterns:
+      - "BlogPost"
+      - "BlogCategory"
+      - "BlogCategoryRef"
+      - "BlogFilters"
+      - "PaginatedBlogPosts"
+
   # Release Models
   Releases:
     description: "Release notes and version information"

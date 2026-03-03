@@ -36,6 +36,12 @@ public protocol SupportServiceProtocol: Sendable {
         userEmail: String?,
         userName: String?
     ) async throws -> Void
+
+    // Magic Link Authentication
+    func sendMagicLink(userEmail: String) async throws -> MagicLinkResponse
+    func verifyMagicLinkToken(_ token: String) async throws -> MagicLinkVerifyResponse
+    func getTicketWithToken(ticketId: String, token: String) async throws -> SupportTicket
+    func addMessageWithToken(ticketId: String, token: String, content: String) async throws -> SupportMessage
 }
 
 internal actor SupportService: SupportServiceProtocol {
@@ -176,7 +182,7 @@ internal actor SupportService: SupportServiceProtocol {
     ) async throws -> Void {
         logInfo("Submitting support form: \(formId)")
         let userContext = userContextProvider()
-        
+
         let request = SupportFormSubmission(
             formId: formId,
             subject: subject,
@@ -185,8 +191,51 @@ internal actor SupportService: SupportServiceProtocol {
             userEmail: userEmail ?? userContext?.email,
             userName: userName ?? userContext?.name
         )
-        
+
         _ = try await apiClient.post(endpoint: .submitSupportForm(projectId: projectId, formId: formId), body: request)
         logInfo("Successfully submitted support form: \(formId)")
+    }
+
+    // MARK: - Magic Link Authentication
+
+    public func sendMagicLink(userEmail: String) async throws -> MagicLinkResponse {
+        logInfo("Sending magic link to: \(userEmail)")
+        let request = MagicLinkRequest(projectId: projectId, userEmail: userEmail)
+        let response: MagicLinkResponse = try await apiClient.post(endpoint: .supportMagicLink, body: request)
+        logInfo("Successfully sent magic link")
+        return response
+    }
+
+    public func verifyMagicLinkToken(_ token: String) async throws -> MagicLinkVerifyResponse {
+        logDebug("Verifying magic link token")
+        let response: APIResponse<MagicLinkVerifyResponse> = try await apiClient.get(
+            endpoint: .supportVerifyToken,
+            token: token
+        )
+        logInfo("Successfully verified magic link token, found \(response.data.tickets.count) tickets")
+        return response.data
+    }
+
+    public func getTicketWithToken(ticketId: String, token: String) async throws -> SupportTicket {
+        logDebug("Getting ticket with token: \(ticketId)")
+        let response: APIResponse<SupportTicket> = try await apiClient.get(
+            endpoint: .supportTicketWithToken(ticketId: ticketId),
+            token: token
+        )
+        logInfo("Successfully fetched ticket with token: \(response.data.subject)")
+        return response.data
+    }
+
+    public func addMessageWithToken(ticketId: String, token: String, content: String) async throws -> SupportMessage {
+        logInfo("Adding message with token to ticket: \(ticketId)")
+        let request = AddMessageWithTokenRequest(content: content)
+
+        // Build URL with token query parameter
+        let response: APIResponse<SupportMessage> = try await apiClient.post(
+            endpoint: .supportMessageWithToken(ticketId: ticketId),
+            body: request
+        )
+        logInfo("Successfully added message with token to ticket: \(ticketId)")
+        return response.data
     }
 }

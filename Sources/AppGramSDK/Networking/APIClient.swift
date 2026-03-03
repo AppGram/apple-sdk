@@ -80,15 +80,19 @@ internal actor APIClient {
         endpoint: Endpoints,
         filters: WishFilters? = nil,
         wishId: String? = nil,
-        supportRequestFilters: SupportRequestFilters? = nil
+        supportRequestFilters: SupportRequestFilters? = nil,
+        blogFilters: BlogFilters? = nil,
+        token: String? = nil
     ) async throws -> T {
-        logDebug("GET request to endpoint: \(endpoint.path), filters: \(String(describing: filters)), wishId: \(String(describing: wishId)), supportRequestFilters: \(String(describing: supportRequestFilters))")
+        logDebug("GET request to endpoint: \(endpoint.path), filters: \(String(describing: filters)), wishId: \(String(describing: wishId)), supportRequestFilters: \(String(describing: supportRequestFilters)), blogFilters: \(String(describing: blogFilters))")
         let request = try buildRequest(
             endpoint: endpoint,
             method: .get,
             filters: filters,
             wishId: wishId,
-            supportRequestFilters: supportRequestFilters
+            supportRequestFilters: supportRequestFilters,
+            blogFilters: blogFilters,
+            token: token
         )
         return try await execute(request)
     }
@@ -164,14 +168,16 @@ internal actor APIClient {
         method: HTTPMethod,
         filters: WishFilters? = nil,
         wishId: String? = nil,
-        supportRequestFilters: SupportRequestFilters? = nil
+        supportRequestFilters: SupportRequestFilters? = nil,
+        blogFilters: BlogFilters? = nil,
+        token: String? = nil
     ) throws -> URLRequest {
         guard var components = URLComponents(string: baseURL + endpoint.path) else {
             logError("Failed to create URL components for endpoint: \(endpoint.path)")
             throw AppGramError.invalidResponse
         }
 
-        let queryItems = endpoint.queryItems(projectId: projectId, filters: filters, wishId: wishId, supportRequestFilters: supportRequestFilters)
+        let queryItems = endpoint.queryItems(projectId: projectId, filters: filters, wishId: wishId, supportRequestFilters: supportRequestFilters, blogFilters: blogFilters, token: token)
         if !queryItems.isEmpty {
             components.queryItems = queryItems
         }
@@ -526,7 +532,17 @@ struct APIErrorResponse: Decodable {
 internal struct APIResponse<T: Decodable>: Decodable {
     public let success: Bool?
     public let data: T
-    
+
+    enum CodingKeys: String, CodingKey {
+        case success, data
+    }
+}
+
+// Generic API response wrapper for optional data (when API can return null)
+internal struct OptionalAPIResponse<T: Decodable>: Decodable {
+    public let success: Bool?
+    public let data: T?
+
     enum CodingKeys: String, CodingKey {
         case success, data
     }

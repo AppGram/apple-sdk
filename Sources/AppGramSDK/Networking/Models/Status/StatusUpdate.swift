@@ -38,7 +38,7 @@ public struct StatusUpdate: Codable, Identifiable, Sendable {
     public let state: State
     
     /// The list of service IDs affected by this update.
-    public let affectedServices: [String]
+    public let affectedServices: [String]?
     
     /// The date when the incident or maintenance started.
     public let startedAt: Date?

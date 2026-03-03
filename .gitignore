@@ -8,6 +8,7 @@ DerivedData/
 # Swift Package Manager
 .build/
 .swiftpm/
+Package.resolved
 
 # Documentation builds
 docs/
@@ -18,3 +19,37 @@ build/
 *.o
 *.a
 *.framework
+*.dSYM
+*.app
+*.ipa
+*.xcarchive
+
+# IDEs
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+build-docs.log
+generate-docs.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# OS generated files
+Thumbs.db
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Swift related
+*.swiftmodule
+*.swiftdoc
+*.swiftinterface

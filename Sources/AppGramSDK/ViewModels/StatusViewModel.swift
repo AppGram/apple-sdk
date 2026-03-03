@@ -50,7 +50,7 @@ internal class StatusViewModel: ObservableObject {
             )
             overview = fetchedOverview
             activeUpdates = fetchedOverview.activeUpdates
-            services = fetchedOverview.services
+            services = fetchedOverview.services ?? []
             currentStatus = fetchedOverview.currentStatus
             isLoading = false
 
@@ -77,7 +77,7 @@ internal class StatusViewModel: ObservableObject {
 
             overview = fetchedOverview
             activeUpdates = fetchedOverview.activeUpdates
-            services = fetchedOverview.services
+            services = fetchedOverview.services ?? []
             currentStatus = fetchedOverview.currentStatus
 
             // Notify about new updates

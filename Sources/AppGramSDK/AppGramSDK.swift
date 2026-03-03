@@ -61,6 +61,7 @@ public final class AppGramSDK: @unchecked Sendable {
     private var statusService: StatusService?
     private var releasesService: ReleasesService?
     private var widgetService: WidgetService?
+    private var blogService: BlogService?
     private var notificationManager: NotificationManager?
     private var popupManager: PopupManager?
     private var announcementManager: AnnouncementManager?
@@ -222,6 +223,11 @@ public final class AppGramSDK: @unchecked Sendable {
             apiClient: apiClient!,
             projectId: projectId,
             userContextProvider: userContextProvider
+        )
+
+        self.blogService = BlogService(
+            apiClient: apiClient!,
+            projectId: projectId
         )
 
         self.notificationManager = NotificationManager()
@@ -524,6 +530,28 @@ public final class AppGramSDK: @unchecked Sendable {
     /// ```
     public func getWidgetService() throws -> WidgetServiceProtocol {
         guard let service = widgetService else {
+            throw AppGramError.notConfigured
+        }
+        return service
+    }
+
+    /// Returns the blog service instance.
+    ///
+    /// Use this service to interact with blog functionality, such as fetching
+    /// blog posts, categories, and searching content.
+    ///
+    /// - Returns: A ``BlogServiceProtocol`` implementation for interacting with the blog API.
+    /// - Throws: ``AppGramError/notConfigured`` if the SDK has not been configured.
+    ///
+    /// ## Example
+    ///
+    /// ```swift
+    /// let service = try AppGramSDK.shared.getBlogService()
+    /// let posts = try await service.getBlogPosts()
+    /// ```
+    public func getBlogService() throws -> BlogServiceProtocol {
+        guard let service = blogService else {
+            logError("BlogService not configured. Call configure() first.")
             throw AppGramError.notConfigured
         }
         return service
@@ -981,6 +1009,28 @@ public final class AppGramSDK: @unchecked Sendable {
             widgetService: service
         )
         .appGramTheme(config.theme)
+    }
+
+    /// Returns a SwiftUI view for displaying blog posts and content.
+    ///
+    /// This view shows a list of blog posts with search, filtering, and pagination.
+    /// Users can tap posts to view full content.
+    ///
+    /// - Returns: A SwiftUI view for the blog.
+    /// - Throws: ``AppGramError/notConfigured`` if the SDK has not been configured.
+    ///
+    /// ## Example
+    ///
+    /// ```swift
+    /// let blogView = try AppGramSDK.shared.blogView()
+    /// ```
+    public func blogView() throws -> some View {
+        guard let config = self.configuration else {
+            throw AppGramError.notConfigured
+        }
+        let service = try getBlogService()
+        return BlogView(blogService: service)
+            .appGramTheme(config.theme)
     }
 
     // MARK: - UIKit Integration

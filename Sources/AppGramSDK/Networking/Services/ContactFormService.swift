@@ -16,6 +16,7 @@ public protocol ContactFormServiceProtocol: Sendable {
     func getFormDirect(projectId: String, formId: String) async throws -> ContactForm
     func getStandaloneForm(formId: String) async throws -> StandaloneFormResponse
     func submitForm(_ submission: ContactFormSubmission, projectId: String?) async throws
+    func trackFormView(formId: String) async throws
 }
 
 internal actor ContactFormService: ContactFormServiceProtocol {
@@ -75,7 +76,24 @@ internal actor ContactFormService: ContactFormServiceProtocol {
         )
         logInfo("Successfully submitted contact form")
     }
+
+    /// Track a form view for analytics.
+    ///
+    /// Call this method when a form is displayed to track view analytics.
+    ///
+    /// - Parameter formId: The ID of the form being viewed.
+    public func trackFormView(formId: String) async throws {
+        logDebug("Tracking form view for formId: \(formId)")
+        try await apiClient.post(
+            endpoint: .trackFormView(projectId: projectId, formId: formId),
+            body: EmptyBody()
+        )
+        logInfo("Successfully tracked form view for: \(formId)")
+    }
 }
+
+/// Empty body for POST requests that don't require a body.
+private struct EmptyBody: Encodable {}
 
 internal struct FormValidator {
     public init() {}

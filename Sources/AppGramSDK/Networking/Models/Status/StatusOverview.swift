@@ -19,18 +19,18 @@ import Foundation
 public struct StatusOverview: Codable, Sendable {
     /// The status page information.
     public let statusPage: StatusPage
-    
+
     /// The overall current status of all services.
     public let currentStatus: StatusType
-    
+
     /// The list of active status updates or incidents.
     public let activeUpdates: [StatusUpdate]
-    
+
     /// The list of services being monitored.
-    public let services: [StatusPageService]
-    
+    public let services: [StatusPageService]?
+
     /// A dictionary mapping service IDs to their current status.
-    public let servicesStatus: [String: StatusType]
+    public let servicesStatus: [String: StatusType]?
 
     enum CodingKeys: String, CodingKey {
         case statusPage = "status_page"
@@ -62,28 +62,40 @@ public struct StatusOverview: Codable, Sendable {
 public struct StatusPage: Codable, Sendable {
     /// The unique identifier for the status page.
     public let id: String
-    
+
     /// The display name of the status page.
     public let name: String
-    
+
     /// The URL-friendly slug identifier.
     public let slug: String
-    
+
     /// An optional description of the status page.
     public let description: String?
-    
+
     /// The project ID this status page belongs to.
-    public let projectId: String
-    
+    public let projectId: String?
+
+    /// The organization ID this status page belongs to.
+    public let organizationId: String?
+
+    /// The public URL for the status page.
+    public let publicUrl: String?
+
+    /// Whether the status page is active.
+    public let isActive: Bool?
+
     /// The date when the status page was created.
-    public let createdAt: Date
-    
+    public let createdAt: Date?
+
     /// The date when the status page was last updated.
-    public let updatedAt: Date
+    public let updatedAt: Date?
 
     enum CodingKeys: String, CodingKey {
         case id, name, slug, description
         case projectId = "project_id"
+        case organizationId = "organization_id"
+        case publicUrl = "public_url"
+        case isActive = "is_active"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
     }

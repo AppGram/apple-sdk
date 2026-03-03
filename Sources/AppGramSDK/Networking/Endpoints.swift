@@ -55,6 +55,25 @@ internal enum Endpoints {
     case release(orgSlug: String, projectSlug: String, releaseSlug: String)
     case releaseFeatures(releaseId: String)
 
+    // Blog
+    case blogPosts(projectId: String)
+    case blogPost(projectId: String, slug: String)
+    case blogFeatured(projectId: String)
+    case blogCategories(projectId: String)
+    case blogByCategory(projectId: String, categorySlug: String)
+    case blogByTag(projectId: String, tag: String)
+    case blogSearch(projectId: String, query: String)
+    case blogRelated(projectId: String, slug: String)
+
+    // Support Magic Link
+    case supportMagicLink
+    case supportVerifyToken
+    case supportTicketWithToken(ticketId: String)
+    case supportMessageWithToken(ticketId: String)
+
+    // Form Analytics
+    case trackFormView(projectId: String, formId: String)
+
     var path: String {
         switch self {
         case .wishes:
@@ -125,6 +144,32 @@ internal enum Endpoints {
             return "/api/v1/releases/public/\(orgSlug)/\(projectSlug)/\(releaseSlug)"
         case .releaseFeatures(let releaseId):
             return "/api/v1/releases/\(releaseId)/features"
+        case .blogPosts:
+            return "/portal/blog/posts"
+        case .blogPost(_, let slug):
+            return "/portal/blog/posts/\(slug)"
+        case .blogFeatured:
+            return "/portal/blog/featured"
+        case .blogCategories:
+            return "/portal/blog/categories"
+        case .blogByCategory(_, let categorySlug):
+            return "/portal/blog/categories/\(categorySlug)"
+        case .blogByTag(_, let tag):
+            return "/portal/blog/tags/\(tag)"
+        case .blogSearch:
+            return "/portal/blog/search"
+        case .blogRelated(_, let slug):
+            return "/portal/blog/posts/\(slug)/related"
+        case .supportMagicLink:
+            return "/portal/support-requests/send-magic-link"
+        case .supportVerifyToken:
+            return "/portal/support-requests/verify-token"
+        case .supportTicketWithToken(let ticketId):
+            return "/portal/support-requests/\(ticketId)"
+        case .supportMessageWithToken(let ticketId):
+            return "/portal/support-requests/\(ticketId)/messages"
+        case .trackFormView(let projectId, let formId):
+            return "/projects/\(projectId)/contact-forms/\(formId)/view"
         }
     }
 
@@ -133,17 +178,20 @@ internal enum Endpoints {
         case .wishes, .wish, .comments, .categories, .customization, .roadmap,
              .supportTickets, .supportTicket, .supportMessages, .supportRequestsMy, .supportForms, .supportForm,
              .survey, .helpCollections, .helpArticles, .helpArticle, .contactForms, .contactForm, .standaloneForm,
-             .statusOverview, .statusServices, .releases, .release, .releaseFeatures:
+             .statusOverview, .statusServices, .releases, .release, .releaseFeatures,
+             .blogPosts, .blogPost, .blogFeatured, .blogCategories, .blogByCategory, .blogByTag, .blogSearch, .blogRelated,
+             .supportVerifyToken, .supportTicketWithToken:
             return .get
         case .createWish, .vote, .createComment, .createSupportTicket,
-             .createSupportMessage, .uploadFile, .submitSurveyResponse, .submitContactForm, .submitSupportForm:
+             .createSupportMessage, .uploadFile, .submitSurveyResponse, .submitContactForm, .submitSupportForm,
+             .supportMagicLink, .supportMessageWithToken, .trackFormView:
             return .post
         case .removeVote:
             return .delete
         }
     }
 
-    func queryItems(projectId: String? = nil, filters: WishFilters? = nil, wishId: String? = nil, searchQuery: String? = nil, supportRequestFilters: SupportRequestFilters? = nil) -> [URLQueryItem] {
+    func queryItems(projectId: String? = nil, filters: WishFilters? = nil, wishId: String? = nil, searchQuery: String? = nil, supportRequestFilters: SupportRequestFilters? = nil, blogFilters: BlogFilters? = nil, token: String? = nil) -> [URLQueryItem] {
         var items: [URLQueryItem] = []
 
         switch self {
@@ -202,6 +250,62 @@ internal enum Endpoints {
             items.append(URLQueryItem(name: "project_id", value: pid))
         case .supportForm(let pid, _):
             items.append(URLQueryItem(name: "project_id", value: pid))
+        case .blogPosts(let pid):
+            items.append(URLQueryItem(name: "project_id", value: pid))
+            if let blogFilters = blogFilters {
+                if let categorySlug = blogFilters.categorySlug {
+                    items.append(URLQueryItem(name: "category_slug", value: categorySlug))
+                }
+                if let tag = blogFilters.tag {
+                    items.append(URLQueryItem(name: "tag", value: tag))
+                }
+                if let search = blogFilters.search {
+                    items.append(URLQueryItem(name: "search", value: search))
+                }
+                if let isFeatured = blogFilters.isFeatured {
+                    items.append(URLQueryItem(name: "is_featured", value: String(isFeatured)))
+                }
+                items.append(URLQueryItem(name: "page", value: String(blogFilters.page)))
+                items.append(URLQueryItem(name: "per_page", value: String(blogFilters.perPage)))
+            }
+        case .blogPost(let pid, _):
+            items.append(URLQueryItem(name: "project_id", value: pid))
+        case .blogFeatured(let pid):
+            items.append(URLQueryItem(name: "project_id", value: pid))
+        case .blogCategories(let pid):
+            items.append(URLQueryItem(name: "project_id", value: pid))
+        case .blogByCategory(let pid, _):
+            items.append(URLQueryItem(name: "project_id", value: pid))
+            if let blogFilters = blogFilters {
+                items.append(URLQueryItem(name: "page", value: String(blogFilters.page)))
+                items.append(URLQueryItem(name: "per_page", value: String(blogFilters.perPage)))
+            }
+        case .blogByTag(let pid, _):
+            items.append(URLQueryItem(name: "project_id", value: pid))
+            if let blogFilters = blogFilters {
+                items.append(URLQueryItem(name: "page", value: String(blogFilters.page)))
+                items.append(URLQueryItem(name: "per_page", value: String(blogFilters.perPage)))
+            }
+        case .blogSearch(let pid, let query):
+            items.append(URLQueryItem(name: "project_id", value: pid))
+            items.append(URLQueryItem(name: "q", value: query))
+            if let blogFilters = blogFilters {
+                items.append(URLQueryItem(name: "page", value: String(blogFilters.page)))
+                items.append(URLQueryItem(name: "per_page", value: String(blogFilters.perPage)))
+            }
+        case .blogRelated(let pid, _):
+            items.append(URLQueryItem(name: "project_id", value: pid))
+        case .supportVerifyToken:
+            if let pid = projectId {
+                items.append(URLQueryItem(name: "project_id", value: pid))
+            }
+            if let token = token {
+                items.append(URLQueryItem(name: "token", value: token))
+            }
+        case .supportTicketWithToken:
+            if let token = token {
+                items.append(URLQueryItem(name: "token", value: token))
+            }
         default:
             break
         }

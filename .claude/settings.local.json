@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(swift build:*)",
+      "Bash(xcodebuild:*)",
+      "WebFetch(domain:api.appgram.dev)",
+      "Bash(open:*)",
+      "Bash(wc:*)",
+      "Bash(ls:*)",
+      "Bash(go mod tidy:*)",
+      "Bash(go build:*)",
+      "Bash(./bin/docc-to-sdk:*)",
+      "Bash(swiftc:*)",
+      "Bash(tree:*)",
+      "Bash(git -C /Users/nedimf/Documents/Projects/Personal/BetterAppSDK/iOS/AGSandbox log --oneline --all -10)",
+      "WebSearch",
+      "WebFetch(domain:www.apple.com)",
+      "WebFetch(domain:medium.com)",
+      "WebFetch(domain:www.index.dev)"
+    ]
+  }
+}

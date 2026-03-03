@@ -486,13 +486,13 @@ public struct CreateMessageRequest: Encodable, Sendable {
 public struct SupportRequestFilters: Sendable {
     /// Filter by user email address.
     public let email: String?
-    
+
     /// Filter by external user ID.
     public let externalUserId: String?
-    
+
     /// The page number for pagination (1-based).
     public let page: Int
-    
+
     /// The number of tickets to return per page.
     public let perPage: Int
 
@@ -507,4 +507,53 @@ public struct SupportRequestFilters: Sendable {
         self.page = page
         self.perPage = perPage
     }
+}
+
+// MARK: - Magic Link Types
+
+/// Response from sending a magic link email.
+///
+/// ## Discussion
+/// This response is returned when a magic link is sent to a user's email
+/// for accessing their support tickets without authentication.
+public struct MagicLinkResponse: Decodable, Sendable {
+    /// Whether the magic link was sent successfully.
+    public let success: Bool
+
+    /// A message describing the result.
+    public let message: String
+}
+
+/// Response from verifying a magic link token.
+///
+/// ## Discussion
+/// This response contains the user's tickets after successfully verifying
+/// a magic link token.
+public struct MagicLinkVerifyResponse: Decodable, Sendable {
+    /// The user's support tickets.
+    public let tickets: [SupportTicket]
+
+    /// The verified user's email address.
+    public let userEmail: String
+
+    enum CodingKeys: String, CodingKey {
+        case tickets
+        case userEmail = "user_email"
+    }
+}
+
+/// Request to send a magic link.
+internal struct MagicLinkRequest: Encodable, Sendable {
+    let projectId: String
+    let userEmail: String
+
+    enum CodingKeys: String, CodingKey {
+        case projectId = "project_id"
+        case userEmail = "user_email"
+    }
+}
+
+/// Request to add a message using a magic link token.
+internal struct AddMessageWithTokenRequest: Encodable, Sendable {
+    let content: String
 }

@@ -270,7 +270,7 @@ public struct StatusPageView: View {
             ForEach(viewModel.services) { service in
                 StatusServiceRow(
                     service: service,
-                    status: viewModel.overview?.servicesStatus[service.id]
+                    status: viewModel.overview?.servicesStatus?[service.id]
                 )
             }
         }
