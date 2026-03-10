@@ -1,0 +1,64 @@
+# Xcode
+.DS_Store
+*.xcuserstate
+*.xcworkspace
+xcuserdata/
+DerivedData/
+
+# Swift Package Manager
+.build/
+.swiftpm/
+Package.resolved
+
+# Documentation
+docs/
+*.doccarchive
+*.docc/
+
+# Claude
+.claude/
+
+# Build artifacts
+build/
+*.o
+*.a
+*.framework
+*.dSYM
+*.app
+*.ipa
+*.xcarchive
+
+# IDEs
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# OS generated files
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+
+# Swift related
+*.swiftmodule
+*.swiftdoc
+*.swiftinterface
+
+# Scripts
+*.sh
+
+# Internal docs
+DESIGN_SYSTEM_MIGRATION.md
+DOCS_BUILD_README.md
+DOCUMENTATION.md
+DOCUMENTATION_TEMPLATE.swift
+QUICK_START.md
