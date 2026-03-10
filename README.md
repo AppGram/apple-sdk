@@ -20,14 +20,14 @@ Add the following to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/appgram/ios-sdk.git", from: "1.2.0")
+    .package(url: "https://github.com/AppGram/apple-sdk.git", branch: "main")
 ]
 ```
 
 Or in Xcode:
 1. Go to **File > Add Package Dependencies**
-2. Enter the repository URL
-3. Select version requirements and add to your target
+2. Enter: `https://github.com/AppGram/apple-sdk.git`
+3. Select **Branch: main** and add to your target
 
 ## Quick Start
 
@@ -541,4 +541,4 @@ struct ContentView: View {
 
 ## License
 
-Copyright 2024 AppGram. All rights reserved.
+Copyright 2026 AppGram. All rights reserved.
