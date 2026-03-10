@@ -69,6 +69,7 @@ internal enum Endpoints {
     case supportMagicLink
     case supportVerifyToken
     case supportTicketWithToken(ticketId: String)
+    case supportMessagesWithToken(ticketId: String)
     case supportMessageWithToken(ticketId: String)
 
     // Form Analytics
@@ -95,17 +96,17 @@ internal enum Endpoints {
         case .roadmap:
             return "/portal/roadmap-data"
         case .supportTickets:
-            return "/portal/support/tickets"
+            return "/portal/support-requests"
         case .supportTicket(let id):
-            return "/portal/support/tickets/\(id)"
+            return "/portal/support-requests/\(id)"
         case .createSupportTicket:
-            return "/portal/support/tickets"
+            return "/portal/support-requests"
         case .supportMessages(let ticketId):
-            return "/portal/support/tickets/\(ticketId)/messages"
+            return "/portal/support-requests/\(ticketId)/messages"
         case .createSupportMessage:
-            return "/portal/support/messages"
+            return "/portal/support-requests/messages"
         case .supportRequestsMy:
-            return "/portal/support-requests/my"
+            return "/portal/support-requests/verify-token"
         case .supportForms(let projectId):
             return "/api/v1/projects/\(projectId)/support-forms"
         case .supportForm(let projectId, let formId):
@@ -166,6 +167,8 @@ internal enum Endpoints {
             return "/portal/support-requests/verify-token"
         case .supportTicketWithToken(let ticketId):
             return "/portal/support-requests/\(ticketId)"
+        case .supportMessagesWithToken(let ticketId):
+            return "/portal/support-requests/\(ticketId)/messages"
         case .supportMessageWithToken(let ticketId):
             return "/portal/support-requests/\(ticketId)/messages"
         case .trackFormView(let projectId, let formId):
@@ -180,7 +183,7 @@ internal enum Endpoints {
              .survey, .helpCollections, .helpArticles, .helpArticle, .contactForms, .contactForm, .standaloneForm,
              .statusOverview, .statusServices, .releases, .release, .releaseFeatures,
              .blogPosts, .blogPost, .blogFeatured, .blogCategories, .blogByCategory, .blogByTag, .blogSearch, .blogRelated,
-             .supportVerifyToken, .supportTicketWithToken:
+             .supportVerifyToken, .supportTicketWithToken, .supportMessagesWithToken:
             return .get
         case .createWish, .vote, .createComment, .createSupportTicket,
              .createSupportMessage, .uploadFile, .submitSurveyResponse, .submitContactForm, .submitSupportForm,
@@ -302,7 +305,7 @@ internal enum Endpoints {
             if let token = token {
                 items.append(URLQueryItem(name: "token", value: token))
             }
-        case .supportTicketWithToken:
+        case .supportTicketWithToken, .supportMessagesWithToken, .supportMessageWithToken:
             if let token = token {
                 items.append(URLQueryItem(name: "token", value: token))
             }

@@ -365,14 +365,30 @@ public struct SupportFormView: View {
         let userContext = userContextProvider()
 
         do {
-            try await supportService.submitSupportForm(
-                formId: form.id,
-                subject: subject.trimmingCharacters(in: .whitespacesAndNewlines),
-                description: description.trimmingCharacters(in: .whitespacesAndNewlines),
-                data: answers,
-                userEmail: userContext?.email,
-                userName: userContext?.name
-            )
+            // For default form, use the public portal endpoint via createTicket
+            // For custom forms from API, use submitSupportForm
+            if form.id == "default_support_form" {
+                // Get email from form field or user context
+                let email = answers["user_email"] ?? userContext?.email ?? ""
+                let ticket = try await supportService.createTicket(
+                    subject: subject.trimmingCharacters(in: .whitespacesAndNewlines),
+                    description: description.trimmingCharacters(in: .whitespacesAndNewlines),
+                    priority: .low,
+                    email: email,
+                    attachmentUrls: nil
+                )
+                // Save ticket to local storage for "My Tickets" view
+                SupportTicketStorage.shared.saveTicket(ticket)
+            } else {
+                try await supportService.submitSupportForm(
+                    formId: form.id,
+                    subject: subject.trimmingCharacters(in: .whitespacesAndNewlines),
+                    description: description.trimmingCharacters(in: .whitespacesAndNewlines),
+                    data: answers, 
+                    userEmail: userContext?.email,
+                    userName: userContext?.name
+                )
+            }
             isSubmitted = true
         } catch let err as AppGramError {
             error = err

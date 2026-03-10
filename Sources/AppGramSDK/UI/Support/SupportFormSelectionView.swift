@@ -234,10 +234,10 @@ public struct SupportFormSelectionView: View {
 
         do {
             forms = try await supportService.getSupportForms()
-        } catch let err as AppGramError {
-            error = err
-        } catch let networkErr {
-            error = .networkError(networkErr.localizedDescription)
+        } catch {
+            // Support forms endpoint requires admin auth - use default form as fallback
+            logDebug("SupportFormSelectionView: Support forms not available, using default form")
+            forms = [SupportForm.createDefault()]
         }
 
         isLoading = false

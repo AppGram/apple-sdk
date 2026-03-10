@@ -119,6 +119,18 @@ internal actor APIClient {
         let _: EmptyResponse = try await execute(request)
     }
 
+    public func post<T: Decodable, Body: Encodable>(
+        endpoint: Endpoints,
+        body: Body,
+        token: String
+    ) async throws -> T {
+        logDebug("POST request with token to endpoint: \(endpoint.path)")
+        var request = try buildRequest(endpoint: endpoint, method: .post, token: token)
+        request.httpBody = try encoder.encode(body)
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        return try await execute(request)
+    }
+
     public func delete(endpoint: Endpoints) async throws {
         logDebug("DELETE request to endpoint: \(endpoint.path)")
         let request = try buildRequest(endpoint: endpoint, method: .delete)

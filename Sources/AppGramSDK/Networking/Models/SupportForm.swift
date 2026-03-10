@@ -83,7 +83,34 @@ public struct SupportForm: Codable, Identifiable, Hashable, Sendable {
     public var isFormActive: Bool {
         return enabled ?? true
     }
-    
+
+    /// Creates a default support form for use when API forms are unavailable
+    public static func createDefault() -> SupportForm {
+        let emailField = FormField(
+            id: "user_email",
+            type: .email,
+            label: "Your Email",
+            placeholder: "Enter your email address",
+            required: true,
+            options: nil,
+            defaultValue: nil,
+            validation: nil,
+            order: 1
+        )
+
+        return SupportForm(
+            id: "default_support_form",
+            name: "General Support",
+            description: "Submit a support request and we'll get back to you as soon as possible.",
+            fields: [emailField],
+            submitButtonText: "Submit Request",
+            successMessage: "Your support request has been submitted successfully. We'll get back to you soon.",
+            enabled: true,
+            createdAt: nil,
+            updatedAt: nil
+        )
+    }
+
     // MARK: - Hashable Conformance
     
     public func hash(into hasher: inout Hasher) {

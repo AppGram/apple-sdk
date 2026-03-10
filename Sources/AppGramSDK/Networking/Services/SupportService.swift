@@ -41,6 +41,7 @@ public protocol SupportServiceProtocol: Sendable {
     func sendMagicLink(userEmail: String) async throws -> MagicLinkResponse
     func verifyMagicLinkToken(_ token: String) async throws -> MagicLinkVerifyResponse
     func getTicketWithToken(ticketId: String, token: String) async throws -> SupportTicket
+    func getMessagesWithToken(ticketId: String, token: String) async throws -> [SupportMessage]
     func addMessageWithToken(ticketId: String, token: String, content: String) async throws -> SupportMessage
 }
 
@@ -226,14 +227,24 @@ internal actor SupportService: SupportServiceProtocol {
         return response.data
     }
 
+    public func getMessagesWithToken(ticketId: String, token: String) async throws -> [SupportMessage] {
+        logDebug("Getting messages with token for ticket: \(ticketId)")
+        let response: APIResponse<[SupportMessage]> = try await apiClient.get(
+            endpoint: .supportMessagesWithToken(ticketId: ticketId),
+            token: token
+        )
+        logInfo("Successfully fetched \(response.data.count) messages for ticket: \(ticketId)")
+        return response.data
+    }
+
     public func addMessageWithToken(ticketId: String, token: String, content: String) async throws -> SupportMessage {
         logInfo("Adding message with token to ticket: \(ticketId)")
         let request = AddMessageWithTokenRequest(content: content)
 
-        // Build URL with token query parameter
         let response: APIResponse<SupportMessage> = try await apiClient.post(
             endpoint: .supportMessageWithToken(ticketId: ticketId),
-            body: request
+            body: request,
+            token: token
         )
         logInfo("Successfully added message with token to ticket: \(ticketId)")
         return response.data

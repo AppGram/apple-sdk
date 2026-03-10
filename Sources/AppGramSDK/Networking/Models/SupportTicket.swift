@@ -37,9 +37,21 @@ public struct SupportTicket: Codable, Identifiable, Sendable, Hashable {
     /// The current status of the ticket.
     public let status: TicketStatus
     
-    /// The priority level of the ticket.
-    public let priority: TicketPriority
-    
+    /// The priority level of the ticket (optional - may not be returned by portal API).
+    public let priority: TicketPriority?
+
+    /// The category of the ticket.
+    public let category: String?
+
+    /// The source of the ticket (e.g., "portal").
+    public let source: String?
+
+    /// Access token for viewing the ticket.
+    public let accessToken: String?
+
+    /// Magic link URL for accessing the ticket.
+    public let magicLink: String?
+
     /// The email address of the user who created the ticket.
     public let userEmail: String
     
@@ -69,7 +81,11 @@ public struct SupportTicket: Codable, Identifiable, Sendable, Hashable {
         subject: String,
         description: String,
         status: TicketStatus,
-        priority: TicketPriority,
+        priority: TicketPriority?,
+        category: String? = nil,
+        source: String? = nil,
+        accessToken: String? = nil,
+        magicLink: String? = nil,
         userEmail: String,
         userName: String?,
         userId: String?,
@@ -84,6 +100,10 @@ public struct SupportTicket: Codable, Identifiable, Sendable, Hashable {
         self.description = description
         self.status = status
         self.priority = priority
+        self.category = category
+        self.source = source
+        self.accessToken = accessToken
+        self.magicLink = magicLink
         self.userEmail = userEmail
         self.userName = userName
         self.userId = userId
@@ -95,7 +115,9 @@ public struct SupportTicket: Codable, Identifiable, Sendable, Hashable {
     }
 
     enum CodingKeys: String, CodingKey {
-        case id, subject, description, status, priority, messages, attachments
+        case id, subject, description, status, priority, category, source, messages, attachments
+        case accessToken = "access_token"
+        case magicLink = "magic_link"
         case userEmail = "user_email"
         case userName = "user_name"
         case userId = "user_id"

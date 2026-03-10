@@ -13,6 +13,7 @@ internal final class SupportViewModel {
 
     private let supportService: SupportServiceProtocol
     private let userContextProvider: @Sendable () -> UserContext?
+    private let ticketStorage = SupportTicketStorage.shared
 
     public init(supportService: SupportServiceProtocol, userContextProvider: @escaping @Sendable () -> UserContext?) {
         self.supportService = supportService
@@ -20,48 +21,26 @@ internal final class SupportViewModel {
     }
 
     public func loadTickets() async {
-        logDebug("SupportViewModel: Loading support tickets")
+        logDebug("SupportViewModel: Loading support tickets from local storage")
         isLoading = true
         error = nil
 
-        do {
-            tickets = try await supportService.getTickets()
-            logInfo("SupportViewModel: Loaded \(tickets.count) support tickets")
-        } catch let err as AppGramError {
-            logError("SupportViewModel: Failed to load tickets - \(err.localizedDescription)")
-            error = err
-        } catch {
-            logError("SupportViewModel: Network error loading tickets - \(error.localizedDescription)")
-            self.error = .networkError(error.localizedDescription)
-        }
+        // Load tickets from local storage (no public API endpoint exists)
+        tickets = ticketStorage.loadTickets()
+        logInfo("SupportViewModel: Loaded \(tickets.count) support tickets from storage")
 
         isLoading = false
     }
 
     public func loadMyTickets() async {
-        logDebug("SupportViewModel: Loading my support tickets")
+        logDebug("SupportViewModel: Loading my support tickets from local storage")
         isLoadingMyTickets = true
         error = nil
 
-        let userContext = userContextProvider()
-        let email = userContext?.email
-        let externalUserId = userContext?.userId
-
-        do {
-            myTickets = try await supportService.getMyTickets(
-                email: email,
-                externalUserId: externalUserId,
-                page: 1,
-                perPage: 50
-            )
-            logInfo("SupportViewModel: Loaded \(myTickets.count) my support tickets")
-        } catch let err as AppGramError {
-            logError("SupportViewModel: Failed to load my tickets - \(err.localizedDescription)")
-            error = err
-        } catch {
-            logError("SupportViewModel: Network error loading my tickets - \(error.localizedDescription)")
-            self.error = .networkError(error.localizedDescription)
-        }
+        // Load tickets from local storage (same as loadTickets for now)
+        // Tickets are stored locally when created
+        myTickets = ticketStorage.loadTickets()
+        logInfo("SupportViewModel: Loaded \(myTickets.count) my support tickets from storage")
 
         isLoadingMyTickets = false
     }
@@ -103,7 +82,10 @@ internal final class SupportViewModel {
                 email: email,
                 attachmentUrls: attachmentUrls
             )
+            // Save to local storage
+            ticketStorage.saveTicket(ticket)
             tickets.insert(ticket, at: 0)
+            myTickets.insert(ticket, at: 0)
             logInfo("SupportViewModel: Successfully created ticket with id: \(ticket.id)")
             isSubmitting = false
             return true
@@ -166,16 +148,43 @@ internal final class SupportDetailViewModel {
     public init(ticket: SupportTicket, supportService: SupportServiceProtocol) {
         self.ticket = ticket
         self.supportService = supportService
+        // Initialize messages from ticket if available
+        self.messages = ticket.messages ?? []
     }
 
     public func loadMessages() async {
         isLoading = true
         error = nil
 
+        // Use access token if available (required for portal API)
+        guard let token = ticket.accessToken, !token.isEmpty else {
+            // No token available - just use messages from ticket
+            messages = ticket.messages ?? []
+            isLoading = false
+            return
+        }
+
         do {
-            messages = try await supportService.getMessages(ticketId: ticket.id)
+            // Fetch messages directly using token
+            messages = try await supportService.getMessagesWithToken(
+                ticketId: ticket.id,
+                token: token
+            )
+            logInfo("SupportDetailViewModel: Loaded \(messages.count) messages for ticket \(ticket.id)")
         } catch let err as AppGramError {
-            error = err
+            // If messages endpoint fails, try to get them from ticket detail
+            logDebug("SupportDetailViewModel: Messages endpoint failed, trying ticket detail")
+            do {
+                let updatedTicket = try await supportService.getTicketWithToken(
+                    ticketId: ticket.id,
+                    token: token
+                )
+                ticket = updatedTicket
+                messages = updatedTicket.messages ?? []
+                SupportTicketStorage.shared.updateTicket(updatedTicket)
+            } catch {
+                self.error = err
+            }
         } catch {
             self.error = .networkError(error.localizedDescription)
         }
@@ -190,14 +199,20 @@ internal final class SupportDetailViewModel {
             return false
         }
 
+        // Require access token for adding messages
+        guard let token = ticket.accessToken, !token.isEmpty else {
+            error = .unauthorized
+            return false
+        }
+
         isSubmittingMessage = true
         error = nil
 
         do {
-            let message = try await supportService.addMessage(
+            let message = try await supportService.addMessageWithToken(
                 ticketId: ticket.id,
-                content: content,
-                attachmentUrls: attachmentUrls
+                token: token,
+                content: content
             )
             messages.append(message)
             newMessageText = ""
