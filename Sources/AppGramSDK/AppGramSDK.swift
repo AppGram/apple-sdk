@@ -243,7 +243,7 @@ public final class AppGramSDK: @unchecked Sendable {
                 feedbackService: feedbackService
             )
 
-            #if canImport(UIKit)
+            #if canImport(UIKit) || canImport(AppKit)
             self.lifecycleObserver = AppLifecycleObserver()
 
             // Setup lifecycle hooks
@@ -275,12 +275,12 @@ public final class AppGramSDK: @unchecked Sendable {
 
             // Setup lifecycle hooks for announcements if not already created
             if lifecycleObserver == nil {
-                #if canImport(UIKit)
+                #if canImport(UIKit) || canImport(AppKit)
                 self.lifecycleObserver = AppLifecycleObserver()
                 #endif
             }
 
-            #if canImport(UIKit)
+            #if canImport(UIKit) || canImport(AppKit)
             // Add announcement check to launch hook
             let existingOnLaunch = lifecycleObserver?.onLaunch
             lifecycleObserver?.onLaunch = { [weak self] in

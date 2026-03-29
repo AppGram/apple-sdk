@@ -73,4 +73,58 @@ public class AppLifecycleObserver: ObservableObject {
         }
     }
 }
+#elseif canImport(AppKit)
+import AppKit
+
+@MainActor
+public class AppLifecycleObserver: ObservableObject {
+    private var observers: [NSObjectProtocol] = []
+
+    /// Called when the app finishes launching.
+    public var onLaunch: (() -> Void)?
+
+    /// Called when the app enters the foreground.
+    public var onForeground: (() -> Void)?
+
+    /// Called when the app enters the background.
+    public var onBackground: (() -> Void)?
+
+    public init() {
+        setupObservers()
+    }
+
+    private func setupObservers() {
+        let launchObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.didFinishLaunchingNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.onLaunch?()
+        }
+
+        let foregroundObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.didBecomeActiveNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.onForeground?()
+        }
+
+        let backgroundObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.didResignActiveNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.onBackground?()
+        }
+
+        observers = [launchObserver, foregroundObserver, backgroundObserver]
+    }
+
+    deinit {
+        observers.forEach { observer in
+            NotificationCenter.default.removeObserver(observer)
+        }
+    }
+}
 #endif
